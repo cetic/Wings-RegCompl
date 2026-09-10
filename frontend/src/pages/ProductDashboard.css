@@ -1,0 +1,80 @@
+.product-dashboard {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* Top bar with back button + tabs */
+.pd-topbar {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.75rem 2rem;
+  border-bottom: 1px solid var(--color-border-light);
+  background: var(--color-bg-card);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.pd-tabs {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.pd-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1rem;
+  border: none;
+  background: none;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.pd-tab:hover {
+  color: var(--color-text-navy);
+  background: var(--color-border-light);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+.pd-tab.active {
+  color: var(--color-primary-blue);
+  border-bottom-color: var(--color-primary-blue);
+  font-weight: 600;
+}
+
+/* Content area */
+.pd-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Remove duplicate back buttons / breadcrumbs inside child pages */
+.pd-content .pi-breadcrumbs,
+.pd-content .pi-header .btn-ghost,
+.pd-content .breadcrumbs,
+.pd-content .obligations-page > .obligations-header > .btn-ghost,
+.pd-content .results-breadcrumbs,
+.pd-content .results-back-btn {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .pd-topbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+  }
+  .pd-tabs {
+    overflow-x: auto;
+    width: 100%;
+  }
+}

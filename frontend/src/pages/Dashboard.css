@@ -1,0 +1,187 @@
+/* ── Product Grid Home ─────────────────────────── */
+
+.home-loading {
+  padding: 4rem;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 1.05rem;
+}
+
+.home-page {
+  padding: 2.5rem 3rem;
+}
+
+.home-header {
+  margin-bottom: 2rem;
+}
+
+.home-header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-text-navy);
+  margin-bottom: 0.25rem;
+}
+
+.home-subtitle {
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+}
+
+/* Grid */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.25rem;
+}
+
+/* Product card */
+.product-card {
+  position: relative;
+  display: flex;
+  gap: 1rem;
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+  border: 1px solid var(--color-border-light);
+}
+
+.product-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+/* Delete button */
+.pc-delete {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 0.3rem;
+  border-radius: var(--radius-sm);
+  opacity: 0;
+  transition: opacity var(--transition-fast), color var(--transition-fast);
+}
+
+.product-card:hover .pc-delete {
+  opacity: 1;
+}
+
+.pc-delete:hover {
+  color: #d14;
+  background: rgba(209, 68, 68, 0.08);
+}
+
+.pc-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: var(--color-primary-blue-light);
+  color: var(--color-primary-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pc-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.pc-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-navy);
+  margin-bottom: 0.3rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pc-desc {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  line-height: 1.45;
+  margin-bottom: 0.75rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.pc-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.pc-progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.pc-bar {
+  flex: 1;
+  height: 5px;
+  background: var(--color-border-light);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.pc-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.4s ease;
+}
+
+.pc-pct {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-text-navy);
+  min-width: 2.5rem;
+  text-align: right;
+}
+
+.pc-status {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Add-new card */
+.add-card {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 2px dashed var(--color-border);
+  min-height: 140px;
+  color: var(--color-text-muted);
+}
+
+.add-card:hover {
+  border-color: var(--color-primary-blue);
+  color: var(--color-primary-blue);
+}
+
+.add-card .add-icon {
+  opacity: 0.7;
+}
+
+.add-card:hover .add-icon {
+  opacity: 1;
+}
+
+.add-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+}

@@ -1,0 +1,119 @@
+.sidebar {
+  width: 260px;
+  background-color: var(--color-bg-sidebar);
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 10;
+}
+
+.sidebar-header {
+  padding: 2rem 1.5rem;
+}
+
+.sidebar-header h2 {
+  color: var(--color-text-navy);
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.sidebar-header .subtitle {
+  color: var(--color-text-muted);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 1rem 0;
+}
+
+.nav-list {
+  list-style: none;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.875rem 1.5rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  font-size: 0.95rem;
+  text-decoration: none;
+  border-right: 3px solid transparent;
+  transition: all var(--transition-fast);
+}
+
+.nav-link:hover {
+  background-color: var(--color-bg-main);
+  color: var(--color-text-navy);
+}
+
+.nav-link.active {
+  color: var(--color-primary-blue);
+  background-color: var(--color-primary-blue-light);
+  border-right-color: var(--color-primary-blue);
+}
+
+.nav-link.active .nav-icon {
+  color: var(--color-primary-blue);
+}
+
+.nav-icon {
+  color: var(--color-text-muted);
+  transition: color var(--transition-fast);
+}
+
+.sidebar-bottom {
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--color-border-light);
+}
+
+.bottom-nav {
+  margin-bottom: 1rem;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 1.5rem;
+  margin-top: 1rem;
+}
+
+.avatar {
+  background-color: var(--color-bg-navy);
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+.user-role {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}

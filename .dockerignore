@@ -1,0 +1,67 @@
+# Version control
+.git/
+.gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+wings4/
+
+# Node
+frontend/node_modules/
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Neo4j local data (managed by Docker volume)
+neo4j/data/
+neo4j/data-vector/
+neo4j/logs/
+neo4j/plugins/
+
+# ADK session caches
+.adk/
+cra_agents/cra_agents/.adk/
+
+# Test / debug scripts
+_test_*.py
+_check_*.py
+_compare_*.py
+_fix_*.py
+temp_*.py
+test.py
+patch_*.py
+fix_agent.py
+format_agent.py
+
+# Generated outputs
+outputs/
+
+# Uploads (runtime data)
+backend/uploads/
+
+# SQLite DB (runtime data)
+backend/*.db
+
+# Environment (injected via compose)
+.env
+*.env
+
+# Design assets & docs
+design_screens/
+docs/
+
+# Misc
+response.json
+*.owl
