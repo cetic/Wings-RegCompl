@@ -1,0 +1,16 @@
+node_modules
+dist
+build
+*.log
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite
+*.sqlite3
+*.bak
+*.backup
+*.swp
+.DS_Store
+.vscode

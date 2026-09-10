@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+
+# Virtual environment
+wings4/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ADK
+.adk/
+
+# Neo4j local data
+neo4j/
+
+# Temp test/debug scripts
+_test_*.py
+_check_*.py
+temp_*.py
+test.py
+patch_*.py
+fix_agent.py
+format_agent.py
+.git-corrupt/*
+
+# Outputs (regenerable)
+outputs/batch_progress.log
+outputs/~$*
+outputs/articles/
+outputs/CRA_product_*.json
+
+# Environment
+.env
+*.env
+
+# Misc
+node_modules/
+Archive.zip
+
+#tools
+WebVOWL/
+backend/assessment.db
+
+# User-uploaded technical docs (per-deployment, do not commit)
+backend/uploads/
+ARCHITECTURE.md
+
+# Smoke / scratch test scripts
+/tmp/smoke_*.py

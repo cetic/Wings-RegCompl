@@ -1,0 +1,216 @@
+/* ── App Shell ─────────────────────────────── */
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  background-color: var(--color-bg-main);
+}
+
+/* Sidebar */
+.app-sidebar {
+  width: 240px;
+  background: var(--color-bg-card);
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 20;
+}
+
+.sidebar-brand {
+  padding: 1.75rem 1.5rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text-navy);
+}
+
+.brand-tag {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin-top: 0.15rem;
+}
+
+.sidebar-nav {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.75rem 0;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  border-right: 3px solid transparent;
+  transition: all var(--transition-fast);
+}
+
+.nav-item:hover {
+  color: var(--color-text-navy);
+  background: var(--color-bg-main);
+}
+
+.nav-item.active {
+  color: var(--color-primary-blue);
+  background: var(--color-primary-blue-light);
+  border-right-color: var(--color-primary-blue);
+  font-weight: 600;
+}
+
+.sidebar-footer {
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid var(--color-border-light);
+}
+
+.sidebar-new-btn {
+  width: 100%;
+  justify-content: center;
+  padding: 0.6rem 1rem;
+}
+
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.75rem;
+  padding: 0.4rem 0.25rem;
+  border-top: 1px solid var(--color-border-light);
+}
+
+.sidebar-username {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-logout {
+  padding: 0.3rem;
+  color: var(--color-text-muted);
+  border-radius: var(--radius-sm, 6px);
+}
+
+.sidebar-logout:hover {
+  color: var(--color-text-navy);
+  background: var(--color-bg-main);
+}
+
+/* Main content area */
+.app-main {
+  flex: 1;
+  margin-left: 240px;
+  max-width: calc(1400px + 240px);
+  padding-left: 0;
+  padding-right: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.app-main > * {
+  width: 100%;
+  max-width: 1400px;
+}
+
+/* ── Profile menu (sidebar footer) ─────────────────────────────── */
+.sidebar-user-wrap {
+  position: relative;
+}
+
+.sidebar-user {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+}
+.sidebar-user:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+}
+
+.sidebar-menu {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  padding: 4px;
+  z-index: 101;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  background: transparent;
+  border: 0;
+  color: #111827;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  text-align: left;
+}
+.sidebar-menu-item:hover {
+  background: #f3f4f6;
+}
+
+/* ── Change-password form ──────────────────────────────────────── */
+.pw-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.pw-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  color: var(--text-muted, #6b7280);
+  font-weight: 500;
+}
+
+.pw-label input {
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #111827;
+  background: #fff;
+}

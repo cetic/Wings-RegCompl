@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+sqlalchemy
+pydantic
+python-dotenv
+python-jose[cryptography]
+bcrypt
+python-multipart
+httpx
+pypdf
+python-docx
+openpyxl
+reportlab

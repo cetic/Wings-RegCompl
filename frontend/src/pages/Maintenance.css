@@ -1,0 +1,64 @@
+.maintenance-page {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  padding: 1.5rem;
+  color: #f1f5f9;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.maintenance-card {
+  max-width: 520px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+}
+
+.maintenance-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.maintenance-card h1 {
+  margin: 0 0 1rem 0;
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+.maintenance-card p {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #cbd5e1;
+}
+
+.maintenance-sub {
+  color: #94a3b8 !important;
+  font-size: 0.95rem !important;
+}
+
+.maintenance-retry {
+  margin-top: 1.75rem;
+  padding: 0.7rem 1.6rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #0f172a;
+  background: #f1f5f9;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.maintenance-retry:hover {
+  background: #ffffff;
+  transform: translateY(-1px);
+}

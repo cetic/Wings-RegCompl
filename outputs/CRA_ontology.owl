@@ -1,0 +1,930 @@
+<?xml version="1.0"?>
+<rdf:RDF xmlns="http://example.org/cra#"
+     xml:base="http://example.org/cra"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:dct="http://purl.org/dc/terms/"
+     xmlns:cra="http://example.org/cra#">
+
+    <owl:Ontology rdf:about="http://example.org/cra">
+        <rdfs:label xml:lang="en">CRA Ontology</rdfs:label>
+        <dct:title xml:lang="en">Cyber Resilience Act Ontology</dct:title>
+        <dct:description xml:lang="en">OWL ontology derived from Regulation (EU) 2024/2847 — Cyber Resilience Act (Article 3 definitions, Articles 6–8 product categories, Articles 13–25 obligations, Annexes I–VIII).</dct:description>
+        <dct:source>Regulation (EU) 2024/2847</dct:source>
+        <owl:versionInfo>1.0.0</owl:versionInfo>
+    </owl:Ontology>
+
+    
+    <!-- Annotation Properties                                          -->
+    
+
+    <owl:AnnotationProperty rdf:about="http://example.org/cra#legalSource">
+        <rdfs:label xml:lang="en">legal source</rdfs:label>
+        <rdfs:comment xml:lang="en">Reference to the CRA article, annex or recital that grounds the class/property.</rdfs:comment>
+    </owl:AnnotationProperty>
+
+    
+    <!-- Top-level Classes                                              -->
+    
+
+    <owl:Class rdf:about="http://example.org/cra#Actor">
+        <rdfs:label xml:lang="en">Actor</rdfs:label>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#ProductWithDigitalElements">
+        <rdfs:label xml:lang="en">Product with Digital Elements</rdfs:label>
+        <cra:legalSource>Art. 3(1)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#ProductComponent">
+        <rdfs:label xml:lang="en">Product Component</rdfs:label>
+        <cra:legalSource>Art. 3(6)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#TechnicalConcept">
+        <rdfs:label xml:lang="en">Technical Concept</rdfs:label>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#CybersecurityConcept">
+        <rdfs:label xml:lang="en">Cybersecurity Concept</rdfs:label>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#MarketActivity">
+        <rdfs:label xml:lang="en">Market Activity</rdfs:label>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#UseContext">
+        <rdfs:label xml:lang="en">Use Context</rdfs:label>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#ComplianceArtifact">
+        <rdfs:label xml:lang="en">Compliance Artifact</rdfs:label>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#LegalProvision">
+        <rdfs:label xml:lang="en">Legal Provision</rdfs:label>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#Enterprise">
+        <rdfs:label xml:lang="en">Enterprise</rdfs:label>
+        <cra:legalSource>Art. 3(19)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#LegalFramework">
+        <rdfs:label xml:lang="en">Legal Framework</rdfs:label>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#ProductCategory">
+        <rdfs:label xml:lang="en">Product Category</rdfs:label>
+        <cra:legalSource>Art. 7, Art. 8</cra:legalSource>
+    </owl:Class>
+
+    
+    <!-- Actors           -->
+    
+
+    <owl:Class rdf:about="http://example.org/cra#EconomicOperator">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#Actor"/>
+        <rdfs:label xml:lang="en">Economic Operator</rdfs:label>
+        <cra:legalSource>Art. 3(12)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#Manufacturer">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#EconomicOperator"/>
+        <rdfs:label xml:lang="en">Manufacturer</rdfs:label>
+        <cra:legalSource>Art. 3(13), Art. 13</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#AuthorisedRepresentative">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#EconomicOperator"/>
+        <rdfs:label xml:lang="en">Authorised Representative</rdfs:label>
+        <cra:legalSource>Art. 3(15), Art. 18</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#Importer">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#EconomicOperator"/>
+        <rdfs:label xml:lang="en">Importer</rdfs:label>
+        <cra:legalSource>Art. 3(16), Art. 19</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#Distributor">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#EconomicOperator"/>
+        <rdfs:label xml:lang="en">Distributor</rdfs:label>
+        <cra:legalSource>Art. 3(17), Art. 20</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#OpenSourceSoftwareSteward">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#Actor"/>
+        <rdfs:label xml:lang="en">Open-Source Software Steward</rdfs:label>
+        <cra:legalSource>Art. 3(14), Art. 24</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#Consumer">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#Actor"/>
+        <rdfs:label xml:lang="en">Consumer</rdfs:label>
+        <cra:legalSource>Art. 3(18)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#User">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#Actor"/>
+        <rdfs:label xml:lang="en">User</rdfs:label>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#InstitutionalActor">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#Actor"/>
+        <rdfs:label xml:lang="en">Institutional Actor</rdfs:label>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#EuropeanCommission">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#InstitutionalActor"/>
+        <rdfs:label xml:lang="en">European Commission</rdfs:label>
+        <cra:legalSource>Art. 9, 61, 62</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#MemberState">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#InstitutionalActor"/>
+        <rdfs:label xml:lang="en">Member State</rdfs:label>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#ENISA">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#InstitutionalActor"/>
+        <rdfs:label xml:lang="en">ENISA</rdfs:label>
+        <cra:legalSource>Art. 14, 16</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#CSIRT">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#InstitutionalActor"/>
+        <rdfs:label xml:lang="en">CSIRT</rdfs:label>
+        <cra:legalSource>Art. 3(51), Art. 14</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#NotifyingAuthority">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#InstitutionalActor"/>
+        <rdfs:label xml:lang="en">Notifying Authority</rdfs:label>
+        <cra:legalSource>Art. 3(26), Art. 36</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#MarketSurveillanceAuthority">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#InstitutionalActor"/>
+        <rdfs:label xml:lang="en">Market Surveillance Authority</rdfs:label>
+        <cra:legalSource>Art. 3(33), Art. 52</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#NotifiedBody">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#InstitutionalActor"/>
+        <rdfs:label xml:lang="en">Notified Body</rdfs:label>
+        <cra:legalSource>Art. 3(29), Art. 39</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#ConformityAssessmentBody">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#InstitutionalActor"/>
+        <rdfs:label xml:lang="en">Conformity Assessment Body</rdfs:label>
+        <cra:legalSource>Art. 3(28)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#ADCO">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#InstitutionalActor"/>
+        <rdfs:label xml:lang="en">ADCO</rdfs:label>
+        <cra:legalSource>Art. 52(15), Art. 13(25)</cra:legalSource>
+    </owl:Class>
+
+    
+    <!-- Products         -->
+    
+
+    <owl:Class rdf:about="http://example.org/cra#DefaultProduct">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#ProductWithDigitalElements"/>
+        <rdfs:label xml:lang="en">Default Product</rdfs:label>
+        <cra:legalSource>Art. 6</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#ImportantProduct">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#ProductWithDigitalElements"/>
+        <rdfs:label xml:lang="en">Important Product</rdfs:label>
+        <cra:legalSource>Art. 7, Annex III</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#ImportantProduct_ClassI">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#ImportantProduct"/>
+        <rdfs:label xml:lang="en">Important Product — Class I</rdfs:label>
+        <cra:legalSource>Annex III, Class I</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#ImportantProduct_ClassII">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#ImportantProduct"/>
+        <rdfs:label xml:lang="en">Important Product — Class II</rdfs:label>
+        <cra:legalSource>Annex III, Class II</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#CriticalProduct">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#ProductWithDigitalElements"/>
+        <rdfs:label xml:lang="en">Critical Product</rdfs:label>
+        <cra:legalSource>Art. 8, Annex IV</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#HighRiskAISystem">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#ProductWithDigitalElements"/>
+        <rdfs:label xml:lang="en">High-Risk AI System</rdfs:label>
+        <cra:legalSource>Art. 12, Reg. (EU) 2024/1689</cra:legalSource>
+    </owl:Class>
+
+    <!-- Product Components -->
+
+    <owl:Class rdf:about="http://example.org/cra#Software">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#ProductComponent"/>
+        <rdfs:label xml:lang="en">Software</rdfs:label>
+        <cra:legalSource>Art. 3(4)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#FreeAndOpenSourceSoftware">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#Software"/>
+        <rdfs:label xml:lang="en">Free and Open-Source Software</rdfs:label>
+        <cra:legalSource>Art. 3(48)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#UnfinishedSoftware">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#Software"/>
+        <rdfs:label xml:lang="en">Unfinished Software</rdfs:label>
+        <cra:legalSource>Art. 4(3)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#Hardware">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#ProductComponent"/>
+        <rdfs:label xml:lang="en">Hardware</rdfs:label>
+        <cra:legalSource>Art. 3(5)</cra:legalSource>
+    </owl:Class>
+
+    
+    <!-- Technical Concepts                                             -->
+    
+
+    <owl:Class rdf:about="http://example.org/cra#ElectronicInformationSystem">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#TechnicalConcept"/>
+        <rdfs:label xml:lang="en">Electronic Information System</rdfs:label>
+        <cra:legalSource>Art. 3(7)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#RemoteDataProcessing">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#TechnicalConcept"/>
+        <rdfs:label xml:lang="en">Remote Data Processing</rdfs:label>
+        <cra:legalSource>Art. 3(2)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#Connection">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#TechnicalConcept"/>
+        <rdfs:label xml:lang="en">Connection</rdfs:label>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#LogicalConnection">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#Connection"/>
+        <rdfs:label xml:lang="en">Logical Connection</rdfs:label>
+        <cra:legalSource>Art. 3(8)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#PhysicalConnection">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#Connection"/>
+        <rdfs:label xml:lang="en">Physical Connection</rdfs:label>
+        <cra:legalSource>Art. 3(9)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#IndirectConnection">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#Connection"/>
+        <rdfs:label xml:lang="en">Indirect Connection</rdfs:label>
+        <cra:legalSource>Art. 3(10)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#EndPoint">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#TechnicalConcept"/>
+        <rdfs:label xml:lang="en">End Point</rdfs:label>
+        <cra:legalSource>Art. 3(11)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#SoftwareBillOfMaterials">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#TechnicalConcept"/>
+        <rdfs:label xml:lang="en">Software Bill of Materials</rdfs:label>
+        <cra:legalSource>Art. 3(39)</cra:legalSource>
+    </owl:Class>
+
+    
+    <!-- Cybersecurity Concepts                                         -->
+    
+
+    <owl:Class rdf:about="http://example.org/cra#Cybersecurity">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#CybersecurityConcept"/>
+        <rdfs:label xml:lang="en">Cybersecurity</rdfs:label>
+        <cra:legalSource>Art. 3(3)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#CybersecurityRisk">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#CybersecurityConcept"/>
+        <rdfs:label xml:lang="en">Cybersecurity Risk</rdfs:label>
+        <cra:legalSource>Art. 3(37)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#SignificantCybersecurityRisk">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#CybersecurityRisk"/>
+        <rdfs:label xml:lang="en">Significant Cybersecurity Risk</rdfs:label>
+        <cra:legalSource>Art. 3(38)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#Vulnerability">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#CybersecurityConcept"/>
+        <rdfs:label xml:lang="en">Vulnerability</rdfs:label>
+        <cra:legalSource>Art. 3(40)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#ExploitableVulnerability">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#Vulnerability"/>
+        <rdfs:label xml:lang="en">Exploitable Vulnerability</rdfs:label>
+        <cra:legalSource>Art. 3(41)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#ActivelyExploitedVulnerability">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#Vulnerability"/>
+        <rdfs:label xml:lang="en">Actively Exploited Vulnerability</rdfs:label>
+        <cra:legalSource>Art. 3(42)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#CyberThreat">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#CybersecurityConcept"/>
+        <rdfs:label xml:lang="en">Cyber Threat</rdfs:label>
+        <cra:legalSource>Art. 3(46)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#Incident">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#CybersecurityConcept"/>
+        <rdfs:label xml:lang="en">Incident</rdfs:label>
+        <cra:legalSource>Art. 3(43)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#SecurityImpactIncident">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#Incident"/>
+        <rdfs:label xml:lang="en">Security Impact Incident</rdfs:label>
+        <cra:legalSource>Art. 3(44)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#NearMiss">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#Incident"/>
+        <rdfs:label xml:lang="en">Near Miss</rdfs:label>
+        <cra:legalSource>Art. 3(45)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#SecurityUpdate">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#CybersecurityConcept"/>
+        <rdfs:label xml:lang="en">Security Update</rdfs:label>
+        <cra:legalSource>Annex I, Part I(2)(c)</cra:legalSource>
+    </owl:Class>
+
+    
+    <!-- Market Activities                                              -->
+    
+
+    <owl:Class rdf:about="http://example.org/cra#PlacingOnTheMarket">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#MarketActivity"/>
+        <rdfs:label xml:lang="en">Placing on the Market</rdfs:label>
+        <cra:legalSource>Art. 3(21)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#MakingAvailableOnTheMarket">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#MarketActivity"/>
+        <rdfs:label xml:lang="en">Making Available on the Market</rdfs:label>
+        <cra:legalSource>Art. 3(22)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#SubstantialModification">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#MarketActivity"/>
+        <rdfs:label xml:lang="en">Substantial Modification</rdfs:label>
+        <cra:legalSource>Art. 3(30)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#Recall">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#MarketActivity"/>
+        <rdfs:label xml:lang="en">Recall</rdfs:label>
+        <cra:legalSource>Art. 3(49)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#Withdrawal">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#MarketActivity"/>
+        <rdfs:label xml:lang="en">Withdrawal</rdfs:label>
+        <cra:legalSource>Art. 3(50)</cra:legalSource>
+    </owl:Class>
+
+    
+    <!-- Use Context      -->
+    
+
+    <owl:Class rdf:about="http://example.org/cra#IntendedPurpose">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#UseContext"/>
+        <rdfs:label xml:lang="en">Intended Purpose</rdfs:label>
+        <cra:legalSource>Art. 3(23)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#ReasonablyForeseeableUse">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#UseContext"/>
+        <rdfs:label xml:lang="en">Reasonably Foreseeable Use</rdfs:label>
+        <cra:legalSource>Art. 3(24)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#ReasonablyForeseeableMisuse">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#UseContext"/>
+        <rdfs:label xml:lang="en">Reasonably Foreseeable Misuse</rdfs:label>
+        <cra:legalSource>Art. 3(25)</cra:legalSource>
+    </owl:Class>
+
+    
+    <!-- Compliance Artifacts                                           -->
+    
+
+    <owl:Class rdf:about="http://example.org/cra#ConformityAssessment">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#ComplianceArtifact"/>
+        <rdfs:label xml:lang="en">Conformity Assessment</rdfs:label>
+        <cra:legalSource>Art. 3(27), Art. 32</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#InternalControlAssessment">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#ConformityAssessment"/>
+        <rdfs:label xml:lang="en">Internal Control Assessment (Module A)</rdfs:label>
+        <cra:legalSource>Annex VIII, Part I</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#EUTypeExamination">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#ConformityAssessment"/>
+        <rdfs:label xml:lang="en">EU-Type Examination (Module B)</rdfs:label>
+        <cra:legalSource>Annex VIII, Part II</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#InternalProductionControl">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#ConformityAssessment"/>
+        <rdfs:label xml:lang="en">Internal Production Control (Module C)</rdfs:label>
+        <cra:legalSource>Annex VIII, Part III</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#FullQualityAssurance">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#ConformityAssessment"/>
+        <rdfs:label xml:lang="en">Full Quality Assurance (Module H)</rdfs:label>
+        <cra:legalSource>Annex VIII, Part IV</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#EUDeclarationOfConformity">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#ComplianceArtifact"/>
+        <rdfs:label xml:lang="en">EU Declaration of Conformity</rdfs:label>
+        <cra:legalSource>Art. 28, Annex V</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#SimplifiedEUDeclarationOfConformity">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#EUDeclarationOfConformity"/>
+        <rdfs:label xml:lang="en">Simplified EU Declaration of Conformity</rdfs:label>
+        <cra:legalSource>Art. 13(20), Annex VI</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#TechnicalDocumentation">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#ComplianceArtifact"/>
+        <rdfs:label xml:lang="en">Technical Documentation</rdfs:label>
+        <cra:legalSource>Art. 31, Annex VII</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#CybersecurityRiskAssessment">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#ComplianceArtifact"/>
+        <rdfs:label xml:lang="en">Cybersecurity Risk Assessment</rdfs:label>
+        <cra:legalSource>Art. 13(2)–(4)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#CEMarking">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#ComplianceArtifact"/>
+        <rdfs:label xml:lang="en">CE Marking</rdfs:label>
+        <cra:legalSource>Art. 3(31), Art. 29–30</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#HarmonisedStandard">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#ComplianceArtifact"/>
+        <rdfs:label xml:lang="en">Harmonised Standard</rdfs:label>
+        <cra:legalSource>Art. 3(36), Art. 27</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#EuropeanStandard">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#ComplianceArtifact"/>
+        <rdfs:label xml:lang="en">European Standard</rdfs:label>
+        <cra:legalSource>Art. 3(35)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#InternationalStandard">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#ComplianceArtifact"/>
+        <rdfs:label xml:lang="en">International Standard</rdfs:label>
+        <cra:legalSource>Art. 3(34)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#EuropeanCybersecurityCertificate">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#ComplianceArtifact"/>
+        <rdfs:label xml:lang="en">European Cybersecurity Certificate</rdfs:label>
+        <cra:legalSource>Art. 8, Reg. (EU) 2019/881</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#CommonSpecification">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#ComplianceArtifact"/>
+        <rdfs:label xml:lang="en">Common Specification</rdfs:label>
+        <cra:legalSource>Art. 27</cra:legalSource>
+    </owl:Class>
+
+    
+    <!-- Legal Provisions -->
+    
+
+    <owl:Class rdf:about="http://example.org/cra#EssentialCybersecurityRequirement">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#LegalProvision"/>
+        <rdfs:label xml:lang="en">Essential Cybersecurity Requirement</rdfs:label>
+        <cra:legalSource>Annex I</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#ProductPropertyRequirement">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#EssentialCybersecurityRequirement"/>
+        <rdfs:label xml:lang="en">Product Property Requirement</rdfs:label>
+        <cra:legalSource>Annex I, Part I</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#VulnerabilityHandlingRequirement">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#EssentialCybersecurityRequirement"/>
+        <rdfs:label xml:lang="en">Vulnerability Handling Requirement</rdfs:label>
+        <cra:legalSource>Annex I, Part II</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#Obligation">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#LegalProvision"/>
+        <rdfs:label xml:lang="en">Obligation</rdfs:label>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#ManufacturerObligation">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#Obligation"/>
+        <rdfs:label xml:lang="en">Manufacturer Obligation</rdfs:label>
+        <cra:legalSource>Art. 13</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#ReportingObligation">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#Obligation"/>
+        <rdfs:label xml:lang="en">Reporting Obligation</rdfs:label>
+        <cra:legalSource>Art. 14</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#ImporterObligation">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#Obligation"/>
+        <rdfs:label xml:lang="en">Importer Obligation</rdfs:label>
+        <cra:legalSource>Art. 19</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#DistributorObligation">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#Obligation"/>
+        <rdfs:label xml:lang="en">Distributor Obligation</rdfs:label>
+        <cra:legalSource>Art. 20</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#StewardObligation">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#Obligation"/>
+        <rdfs:label xml:lang="en">Steward Obligation</rdfs:label>
+        <cra:legalSource>Art. 24</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#InformationObligation">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#Obligation"/>
+        <rdfs:label xml:lang="en">Information Obligation</rdfs:label>
+        <cra:legalSource>Annex II</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#SupportPeriod">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#LegalProvision"/>
+        <rdfs:label xml:lang="en">Support Period</rdfs:label>
+        <cra:legalSource>Art. 3(20), Art. 13(8)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#Penalty">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#LegalProvision"/>
+        <rdfs:label xml:lang="en">Penalty</rdfs:label>
+        <cra:legalSource>Art. 64</cra:legalSource>
+    </owl:Class>
+
+    
+    <!-- Enterprise -->
+    
+
+    <owl:Class rdf:about="http://example.org/cra#Microenterprise">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#Enterprise"/>
+        <rdfs:label xml:lang="en">Microenterprise</rdfs:label>
+        <cra:legalSource>Art. 3(19), Rec. 2003/361/EC</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#SmallEnterprise">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#Enterprise"/>
+        <rdfs:label xml:lang="en">Small Enterprise</rdfs:label>
+        <cra:legalSource>Art. 3(19)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#MediumSizedEnterprise">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#Enterprise"/>
+        <rdfs:label xml:lang="en">Medium-Sized Enterprise</rdfs:label>
+        <cra:legalSource>Art. 3(19)</cra:legalSource>
+    </owl:Class>
+
+    
+    <!-- Legal Framework  -->
+    
+
+    <owl:Class rdf:about="http://example.org/cra#UnionHarmonisationLegislation">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#LegalFramework"/>
+        <rdfs:label xml:lang="en">Union Harmonisation Legislation</rdfs:label>
+        <cra:legalSource>Art. 3(32)</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#PersonalData">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#LegalFramework"/>
+        <rdfs:label xml:lang="en">Personal Data</rdfs:label>
+        <cra:legalSource>Art. 3(47), Reg. (EU) 2016/679</cra:legalSource>
+    </owl:Class>
+
+    <owl:Class rdf:about="http://example.org/cra#CoordinatedVulnerabilityDisclosure">
+        <rdfs:subClassOf rdf:resource="http://example.org/cra#LegalFramework"/>
+        <rdfs:label xml:lang="en">Coordinated Vulnerability Disclosure</rdfs:label>
+        <cra:legalSource>Annex I, Part II(5)</cra:legalSource>
+    </owl:Class>
+
+    <!-- Object Properties-->
+
+    <owl:ObjectProperty rdf:about="http://example.org/cra#manufactures">
+        <rdfs:domain rdf:resource="http://example.org/cra#Manufacturer"/>
+        <rdfs:range rdf:resource="http://example.org/cra#ProductWithDigitalElements"/>
+        <rdfs:label xml:lang="en">manufactures</rdfs:label>
+        <cra:legalSource>Art. 3(13)</cra:legalSource>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.org/cra#imports">
+        <rdfs:domain rdf:resource="http://example.org/cra#Importer"/>
+        <rdfs:range rdf:resource="http://example.org/cra#ProductWithDigitalElements"/>
+        <rdfs:label xml:lang="en">imports</rdfs:label>
+        <cra:legalSource>Art. 3(16)</cra:legalSource>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.org/cra#distributes">
+        <rdfs:domain rdf:resource="http://example.org/cra#Distributor"/>
+        <rdfs:range rdf:resource="http://example.org/cra#ProductWithDigitalElements"/>
+        <rdfs:label xml:lang="en">distributes</rdfs:label>
+        <cra:legalSource>Art. 3(17)</cra:legalSource>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.org/cra#representsManufacturer">
+        <rdfs:domain rdf:resource="http://example.org/cra#AuthorisedRepresentative"/>
+        <rdfs:range rdf:resource="http://example.org/cra#Manufacturer"/>
+        <rdfs:label xml:lang="en">represents manufacturer</rdfs:label>
+        <cra:legalSource>Art. 3(15)</cra:legalSource>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.org/cra#stewards">
+        <rdfs:domain rdf:resource="http://example.org/cra#OpenSourceSoftwareSteward"/>
+        <rdfs:range rdf:resource="http://example.org/cra#FreeAndOpenSourceSoftware"/>
+        <rdfs:label xml:lang="en">stewards</rdfs:label>
+        <cra:legalSource>Art. 3(14)</cra:legalSource>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.org/cra#hasComponent">
+        <rdfs:domain rdf:resource="http://example.org/cra#ProductWithDigitalElements"/>
+        <rdfs:range rdf:resource="http://example.org/cra#ProductComponent"/>
+        <rdfs:label xml:lang="en">has component</rdfs:label>
+        <cra:legalSource>Art. 3(1), (6)</cra:legalSource>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.org/cra#hasRemoteDataProcessing">
+        <rdfs:domain rdf:resource="http://example.org/cra#ProductWithDigitalElements"/>
+        <rdfs:range rdf:resource="http://example.org/cra#RemoteDataProcessing"/>
+        <rdfs:label xml:lang="en">has remote data processing</rdfs:label>
+        <cra:legalSource>Art. 3(1), (2)</cra:legalSource>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.org/cra#hasConnection">
+        <rdfs:domain rdf:resource="http://example.org/cra#ProductWithDigitalElements"/>
+        <rdfs:range rdf:resource="http://example.org/cra#Connection"/>
+        <rdfs:label xml:lang="en">has connection</rdfs:label>
+        <cra:legalSource>Art. 3(8)–(10)</cra:legalSource>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.org/cra#hasSBOM">
+        <rdfs:domain rdf:resource="http://example.org/cra#ProductWithDigitalElements"/>
+        <rdfs:range rdf:resource="http://example.org/cra#SoftwareBillOfMaterials"/>
+        <rdfs:label xml:lang="en">has SBOM</rdfs:label>
+        <cra:legalSource>Art. 3(39), Annex I Part II(1)</cra:legalSource>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.org/cra#isSubjectTo">
+        <rdfs:domain rdf:resource="http://example.org/cra#ProductWithDigitalElements"/>
+        <rdfs:range rdf:resource="http://example.org/cra#ConformityAssessment"/>
+        <rdfs:label xml:lang="en">is subject to</rdfs:label>
+        <cra:legalSource>Art. 32</cra:legalSource>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.org/cra#mustComplyWith">
+        <rdfs:domain rdf:resource="http://example.org/cra#ProductWithDigitalElements"/>
+        <rdfs:range rdf:resource="http://example.org/cra#EssentialCybersecurityRequirement"/>
+        <rdfs:label xml:lang="en">must comply with</rdfs:label>
+        <cra:legalSource>Art. 6</cra:legalSource>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.org/cra#hasSupportPeriod">
+        <rdfs:domain rdf:resource="http://example.org/cra#ProductWithDigitalElements"/>
+        <rdfs:range rdf:resource="http://example.org/cra#SupportPeriod"/>
+        <rdfs:label xml:lang="en">has support period</rdfs:label>
+        <cra:legalSource>Art. 3(20), Art. 13(8)</cra:legalSource>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.org/cra#hasVulnerability">
+        <rdfs:domain rdf:resource="http://example.org/cra#ProductWithDigitalElements"/>
+        <rdfs:range rdf:resource="http://example.org/cra#Vulnerability"/>
+        <rdfs:label xml:lang="en">has vulnerability</rdfs:label>
+        <cra:legalSource>Art. 3(40)</cra:legalSource>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.org/cra#exploits">
+        <rdfs:domain rdf:resource="http://example.org/cra#CyberThreat"/>
+        <rdfs:range rdf:resource="http://example.org/cra#Vulnerability"/>
+        <rdfs:label xml:lang="en">exploits</rdfs:label>
+        <cra:legalSource>Art. 3(40), (46)</cra:legalSource>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.org/cra#causesIncident">
+        <rdfs:domain rdf:resource="http://example.org/cra#Vulnerability"/>
+        <rdfs:range rdf:resource="http://example.org/cra#Incident"/>
+        <rdfs:label xml:lang="en">causes incident</rdfs:label>
+        <cra:legalSource>Art. 3(43), (44)</cra:legalSource>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.org/cra#posesRisk">
+        <rdfs:domain rdf:resource="http://example.org/cra#ProductWithDigitalElements"/>
+        <rdfs:range rdf:resource="http://example.org/cra#CybersecurityRisk"/>
+        <rdfs:label xml:lang="en">poses risk</rdfs:label>
+        <cra:legalSource>Art. 3(37)</cra:legalSource>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.org/cra#addressedBy">
+        <rdfs:domain rdf:resource="http://example.org/cra#Vulnerability"/>
+        <rdfs:range rdf:resource="http://example.org/cra#SecurityUpdate"/>
+        <rdfs:label xml:lang="en">addressed by</rdfs:label>
+        <cra:legalSource>Annex I, Part II(2), (8)</cra:legalSource>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.org/cra#performsAssessment">
+        <rdfs:domain rdf:resource="http://example.org/cra#NotifiedBody"/>
+        <rdfs:range rdf:resource="http://example.org/cra#ConformityAssessment"/>
+        <rdfs:label xml:lang="en">performs assessment</rdfs:label>
+        <cra:legalSource>Art. 39, Art. 47</cra:legalSource>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.org/cra#notifies">
+        <rdfs:domain rdf:resource="http://example.org/cra#NotifyingAuthority"/>
+        <rdfs:range rdf:resource="http://example.org/cra#NotifiedBody"/>
+        <rdfs:label xml:lang="en">notifies</rdfs:label>
+        <cra:legalSource>Art. 35, Art. 43</cra:legalSource>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.org/cra#supervisesMarket">
+        <rdfs:domain rdf:resource="http://example.org/cra#MarketSurveillanceAuthority"/>
+        <rdfs:range rdf:resource="http://example.org/cra#ProductWithDigitalElements"/>
+        <rdfs:label xml:lang="en">supervises market</rdfs:label>
+        <cra:legalSource>Art. 52</cra:legalSource>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.org/cra#reportsTo">
+        <rdfs:domain rdf:resource="http://example.org/cra#Manufacturer"/>
+        <rdfs:range rdf:resource="http://example.org/cra#CSIRT"/>
+        <rdfs:label xml:lang="en">reports to</rdfs:label>
+        <cra:legalSource>Art. 14(1)</cra:legalSource>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.org/cra#reportsToENISA">
+        <rdfs:domain rdf:resource="http://example.org/cra#Manufacturer"/>
+        <rdfs:range rdf:resource="http://example.org/cra#ENISA"/>
+        <rdfs:label xml:lang="en">reports to ENISA</rdfs:label>
+        <cra:legalSource>Art. 14(1)</cra:legalSource>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.org/cra#affixesCEMarking">
+        <rdfs:domain rdf:resource="http://example.org/cra#Manufacturer"/>
+        <rdfs:range rdf:resource="http://example.org/cra#CEMarking"/>
+        <rdfs:label xml:lang="en">affixes CE marking</rdfs:label>
+        <cra:legalSource>Art. 13(12), Art. 30</cra:legalSource>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.org/cra#issuesDeclaration">
+        <rdfs:domain rdf:resource="http://example.org/cra#Manufacturer"/>
+        <rdfs:range rdf:resource="http://example.org/cra#EUDeclarationOfConformity"/>
+        <rdfs:label xml:lang="en">issues declaration</rdfs:label>
+        <cra:legalSource>Art. 13(12), Art. 28</cra:legalSource>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.org/cra#producesTechDoc">
+        <rdfs:domain rdf:resource="http://example.org/cra#Manufacturer"/>
+        <rdfs:range rdf:resource="http://example.org/cra#TechnicalDocumentation"/>
+        <rdfs:label xml:lang="en">produces technical documentation</rdfs:label>
+        <cra:legalSource>Art. 13(12), Art. 31</cra:legalSource>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.org/cra#performsRiskAssessment">
+        <rdfs:domain rdf:resource="http://example.org/cra#Manufacturer"/>
+        <rdfs:range rdf:resource="http://example.org/cra#CybersecurityRiskAssessment"/>
+        <rdfs:label xml:lang="en">performs risk assessment</rdfs:label>
+        <cra:legalSource>Art. 13(2)</cra:legalSource>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.org/cra#placesOnMarket">
+        <rdfs:domain rdf:resource="http://example.org/cra#EconomicOperator"/>
+        <rdfs:range rdf:resource="http://example.org/cra#ProductWithDigitalElements"/>
+        <rdfs:label xml:lang="en">places on market</rdfs:label>
+        <cra:legalSource>Art. 3(21)</cra:legalSource>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.org/cra#makesAvailable">
+        <rdfs:domain rdf:resource="http://example.org/cra#EconomicOperator"/>
+        <rdfs:range rdf:resource="http://example.org/cra#ProductWithDigitalElements"/>
+        <rdfs:label xml:lang="en">makes available</rdfs:label>
+        <cra:legalSource>Art. 3(22)</cra:legalSource>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.org/cra#hasIntendedPurpose">
+        <rdfs:domain rdf:resource="http://example.org/cra#ProductWithDigitalElements"/>
+        <rdfs:range rdf:resource="http://example.org/cra#IntendedPurpose"/>
+        <rdfs:label xml:lang="en">has intended purpose</rdfs:label>
+        <cra:legalSource>Art. 3(23)</cra:legalSource>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.org/cra#presumesConformityVia">
+        <rdfs:domain rdf:resource="http://example.org/cra#ProductWithDigitalElements"/>
+        <rdfs:range rdf:resource="http://example.org/cra#HarmonisedStandard"/>
+        <rdfs:label xml:lang="en">presumes conformity via</rdfs:label>
+        <cra:legalSource>Art. 27</cra:legalSource>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.org/cra#classifiedUnder">
+        <rdfs:domain rdf:resource="http://example.org/cra#ProductWithDigitalElements"/>
+        <rdfs:range rdf:resource="http://example.org/cra#ProductCategory"/>
+        <rdfs:label xml:lang="en">classified under</rdfs:label>
+        <cra:legalSource>Art. 7, Art. 8</cra:legalSource>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.org/cra#imposedOn">
+        <rdfs:domain rdf:resource="http://example.org/cra#Penalty"/>
+        <rdfs:range rdf:resource="http://example.org/cra#EconomicOperator"/>
+        <rdfs:label xml:lang="en">imposed on</rdfs:label>
+        <cra:legalSource>Art. 64</cra:legalSource>
+    </owl:ObjectProperty>
+
+    <owl:ObjectProperty rdf:about="http://example.org/cra#deemsCompliantWith">
+        <rdfs:domain rdf:resource="http://example.org/cra#EssentialCybersecurityRequirement"/>
+        <rdfs:range rdf:resource="http://example.org/cra#EssentialCybersecurityRequirement"/>
+        <rdfs:label xml:lang="en">deems compliant with</rdfs:label>
+        <cra:legalSource>Art. 12 (CRA ↔ AI Act)</cra:legalSource>
+    </owl:ObjectProperty>
+
+    
+    <!-- Disjointness Axioms                                            -->
+    
+
+    <rdf:Description>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AllDisjointClasses"/>
+        <owl:members rdf:parseType="Collection">
+            <owl:Class rdf:about="http://example.org/cra#Manufacturer"/>
+            <owl:Class rdf:about="http://example.org/cra#AuthorisedRepresentative"/>
+            <owl:Class rdf:about="http://example.org/cra#Importer"/>
+            <owl:Class rdf:about="http://example.org/cra#Distributor"/>
+        </owl:members>
+    </rdf:Description>
+
+    <rdf:Description>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AllDisjointClasses"/>
+        <owl:members rdf:parseType="Collection">
+            <owl:Class rdf:about="http://example.org/cra#DefaultProduct"/>
+            <owl:Class rdf:about="http://example.org/cra#ImportantProduct"/>
+            <owl:Class rdf:about="http://example.org/cra#CriticalProduct"/>
+        </owl:members>
+    </rdf:Description>
+
+    <rdf:Description>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AllDisjointClasses"/>
+        <owl:members rdf:parseType="Collection">
+            <owl:Class rdf:about="http://example.org/cra#ImportantProduct_ClassI"/>
+            <owl:Class rdf:about="http://example.org/cra#ImportantProduct_ClassII"/>
+        </owl:members>
+    </rdf:Description>
+
+    <rdf:Description>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AllDisjointClasses"/>
+        <owl:members rdf:parseType="Collection">
+            <owl:Class rdf:about="http://example.org/cra#Software"/>
+            <owl:Class rdf:about="http://example.org/cra#Hardware"/>
+        </owl:members>
+    </rdf:Description>
+
+    <rdf:Description>
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#AllDisjointClasses"/>
+        <owl:members rdf:parseType="Collection">
+            <owl:Class rdf:about="http://example.org/cra#LogicalConnection"/>
+            <owl:Class rdf:about="http://example.org/cra#PhysicalConnection"/>
+            <owl:Class rdf:about="http://example.org/cra#IndirectConnection"/>
+        </owl:members>
+    </rdf:Description>
+
+</rdf:RDF>
