@@ -277,3 +277,12 @@ backend logs for quota or rate-limit errors.
 - [Architecture and workflow](ARCHITECTURE.md)
 - [CRA agent internals](cra_agents/README.md)
 - [Ingestion details](INGESTION_v2.md)
+
+## License
+
+The original software in this repository is licensed under the
+[Apache License 2.0](LICENSE).
+
+Third-party dependencies, EU legal texts, and other third-party materials are
+subject to their respective licenses and terms and are not relicensed by this
+project.
