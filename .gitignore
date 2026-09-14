@@ -53,7 +53,7 @@ Archive.zip
 
 #tools
 WebVOWL/
-backend/assessment.db
+backend/*.db
 
 # User-uploaded technical docs (per-deployment, do not commit)
 backend/uploads/
