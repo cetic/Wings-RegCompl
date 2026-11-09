@@ -1,288 +1,116 @@
 # RegComply
 
-RegComply turns the EU Cyber Resilience Act (CRA) into a Neo4j knowledge
-graph and uses it to generate product-specific compliance assessments.
+File-based command-line tools for parsing EU regulatory sources and extracting structured requirements. The project runs independently and does not require a web service, database, or container stack.
 
-The project currently supports **only the Cyber Resilience Act**, Regulation
-(EU) 2024/2847. Part-IS artifacts in the repository are experimental and are
-not part of the supported workflow.
+## Features
 
-## What runs
+- Parse EUR-Lex HTML, browser-saved EUR-Lex source-view HTML, Formex XML, and PDF into schema-validated parsed-document JSON.
+- Extract bootstrap and main provision packages from parsed JSON.
+- Validate package structure, evidence quotes, references, and applicability conditions.
+- Use Gemini for cloud extraction or Ollama for local extraction.
+- Run an extraction plan without making model calls.
 
-Docker Compose starts the complete application:
+## Requirements
 
-| Service | URL | Purpose |
-|---|---|---|
-| Frontend | <http://localhost> | Main RegComply application |
-| Backend | <http://localhost:8000/docs> | FastAPI API and interactive documentation |
-| ADK web | <http://localhost:8080> | Agent development UI |
-| Neo4j | <http://localhost:7474> | Knowledge graph browser |
-| Ollama | <http://localhost:11434> | Local language and embedding models |
+- Python 3.12, 3.13, or 3.14.
+- Poppler command-line tools (`pdftotext` and `pdfinfo`) for PDF parsing. On macOS: `brew install poppler`.
+- For cloud extraction, a Google API key and network access.
+- For local extraction, Ollama running and the selected model already downloaded.
 
-Application data is persisted in Docker volumes. Generated CRA article JSON
-and batch logs are written under `outputs/` on the host.
+## Install
 
-## Prerequisites
+From this directory:
 
-- Docker Desktop with Docker Compose v2
-- At least 10 GB of free disk space for images and local models
-- A Google AI API key only when using Gemini offload mode
-
-The first startup can take several minutes because Compose downloads the
-language model and embedding model.
-
-## Configure the environment
-
-Create `.env` in the repository root. Do not commit this file.
-
-For local inference with Ollama:
-
-```dotenv
-NEO4J_USER=neo4j
-NEO4J_PASSWORD=replace-with-a-strong-password
-MODEL_TYPE=LOCAL
-OLLAMA_MODEL=gemma4:e2b
-OLLAMA_EMBEDDING_MODEL=nomic-embed-text
-GOOGLE_API_KEY=
+```sh
+python3 -m venv .venv
+.venv/bin/python -m pip install --upgrade pip
+.venv/bin/python -m pip install -e '.[dev]'
 ```
 
-For Gemini offload:
+The install adds `regcomply-parse` and `regcomply-extract` commands. You can also use the Python modules directly or invoke the wrapper scripts in this directory.
 
-```dotenv
-NEO4J_USER=neo4j
-NEO4J_PASSWORD=replace-with-a-strong-password
-MODEL_TYPE=OFFLOAD
-GOOGLE_API_KEY=replace-with-your-google-ai-api-key
-GEMINI_MODEL=gemini-2.5-flash
-BATCH_MODEL=gemini-2.5-flash-lite
-OLLAMA_EMBEDDING_MODEL=nomic-embed-text
+For environment configuration, copy `.env.example` to `.env`, edit it locally, then load it into the shell before running commands:
+
+```sh
+cp .env.example .env
+set -a
+. ./.env
+set +a
 ```
 
-The runtime maintenance flag must be a file named `maintenance.json` in the
-repository root:
+The project intentionally does not auto-load `.env`; credentials stay under the operator's control. Never commit `.env` or API keys.
 
-```json
-{
-  "enabled": false
-}
+## Ontology
+
+The RegKG ontology is included under `ontology/`. `regkg.ttl` is authoritative; `regkg-taxonomy.md` is a generated human-readable reference and should not be edited directly. To regenerate it, install the optional ontology dependency and run:
+
+```sh
+.venv/bin/python -m pip install -e '.[ontology]'
+cd ontology && ../.venv/bin/python generate_taxonomy.py
 ```
 
-Set `enabled` to `true` to replace the frontend with the maintenance page.
+The ontology describes the domain model. The current CLI parser and extraction workflow do not require it at runtime.
 
-## Start the application
+## Parse
 
-From the repository root, run:
-
-```bash
-docker compose up --build -d
-docker compose ps
+```sh
+regcomply-parse ./sources/dsa.html \
+  --short-name DSA \
+  --identifier '(EU) 2022/2065' \
+  --title 'Digital Services Act' \
+  --doc-type Regulation \
+  --output ./work/dsa.parsed.json
 ```
 
-Wait until `neo4j` and `ollama` are healthy. The two `ollama-model-pull`
-services should finish with exit code `0`; they are one-time setup jobs and
-are not expected to remain running.
+The input format is inferred from `.pdf`, `.html` / `.htm`, or `.xml` / `.fmx`. Override it with `--format` when necessary. Parsed output includes the source hash, parser report, and schema metadata.
 
-Check the application:
+Parsing licensed standards stores their full text in the parsed JSON. It is blocked by default. Set `LICENSED_STANDARD_STORAGE_ALLOWED=true` only when you have permission to store that content.
 
-```bash
-curl -fsS http://localhost/maintenance.json
-curl -fsS http://localhost:8000/docs >/dev/null
+## Extract
+
+Inspect planned units without invoking a model:
+
+```sh
+regcomply-extract ./work/dsa.parsed.json \
+  --output-dir ./work/dsa-packages \
+  --phase all \
+  --limit 3 \
+  --plan-only
 ```
 
-Open <http://localhost/login> and sign in with the initial account:
+Run extraction after reviewing the plan:
 
-```text
-Username: admin
-Password: admin
+```sh
+regcomply-extract ./work/dsa.parsed.json \
+  --output-dir ./work/dsa-packages \
+  --phase all \
+  --route auto
 ```
 
-The account is created only when the user table is empty. Change its password
-from the profile menu immediately. If the Docker data volume already contains
-users, use the password previously assigned to `admin`.
+Phases are `bootstrap`, `main`, or `all`. Routes are `auto`, `local`, or `cloud`. Auto uses cloud extraction for non-standard regulations when `GOOGLE_API_KEY` is set; otherwise it selects local Ollama. Licensed standard types always use local extraction. `--limit` applies separately to each selected phase. `--model` overrides the model name.
 
-## Create a user
+Each unit is written to its own JSON file. Invalid units are written as `.invalid.json` and contain validation errors plus the last generated package, when available. Valid packages in the output directory are reused as catalogs on later runs. Review all generated material before relying on it; model output is not legal advice.
 
-User creation is admin-only and is currently exposed through the API. Log in
-as an administrator, capture a bearer token, and register the new account:
+## Tests and lint
 
-```bash
-TOKEN=$(curl -fsS -X POST http://localhost:8000/api/auth/login \
-  -H 'Content-Type: application/x-www-form-urlencoded' \
-  --data-urlencode 'username=admin' \
-  --data-urlencode 'password=admin' \
-  | python3 -c 'import json, sys; print(json.load(sys.stdin)["access_token"])')
-
-curl -fsS -X POST http://localhost:8000/api/auth/register \
-  -H "Authorization: Bearer $TOKEN" \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "username": "assessor",
-    "password": "replace-with-a-strong-password",
-    "full_name": "CRA Assessor",
-    "is_admin": false
-  }'
+```sh
+.venv/bin/python -m pytest
+.venv/bin/python -m ruff check .
 ```
 
-The response contains the new username, full name, and administrator status.
-The new user can then sign in at <http://localhost/login>.
+PDF parser tests require Poppler. CI runs offline unit tests using a synthetic Formex XML fixture; it does not fetch or include licensed source documents.
 
-To create another administrator, set `is_admin` to `true`. Use administrator
-accounts sparingly because they can manage users and access all products.
+## Project contents
 
-## Load the CRA knowledge graph
+- `src/regcomply/`: installable CLI and parser/extraction implementation.
+- `ontology/`: RegKG ontology source, generated taxonomy, and generator.
+- `tests/`: offline tests for CLI behavior and package/unit planning.
+- `UPSTREAM.md`: component map and maintenance notes.
 
-The source document is
-`outputs/CRA_requirements_statemachine.md`. Keep that file in place before
-starting ingestion.
+Contributions are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow. This project is licensed under Apache-2.0; see [LICENSE](LICENSE) and [NOTICE](NOTICE). Redistributors must preserve applicable copyright and attribution notices as described in the license.
 
-1. Sign in to the main application.
-2. Open **AI Assistant** in the sidebar.
-3. Run a small batch first to verify the model and Neo4j connection:
+## Acknowledgements
 
-   ```text
-   Ingest CRA articles 1-3
-   ```
+Contributors: Thierry Noundou Njike and Abiola Paterne Chokki.
 
-4. Confirm the result:
-
-   ```text
-   Show graph stats
-   ```
-
-5. Run the full pipeline with one prompt at a time:
-
-   ```text
-   Ingest all CRA articles
-   Ingest all CRA recitals
-   Ingest all CRA annexes
-   ```
-
-Each prompt invokes one batch tool. Articles accept ranges such as `3-10` or
-`1,3,5-10`; recitals accept `1-130`; annexes accept Roman numerals such as
-`I-III` or `I,III,V`.
-
-Existing parsed JSON is reused by default. Ask the assistant to **force
-re-parse** a range when the source Markdown or parsing logic has changed, for
-example:
-
-```text
-Force re-parse and ingest CRA articles 13-15
-```
-
-To load existing JSON without calling the parsing model:
-
-```text
-Ingest existing JSON for CRA articles 13-15 without parsing
-```
-
-Monitor a batch from another terminal:
-
-```bash
-docker compose logs -f backend
-```
-
-The batch log is also available at `outputs/batch_progress.log`.
-
-## Run a product assessment
-
-After the graph contains CRA data:
-
-1. Open <http://localhost> and sign in.
-2. Select **New Product** from the overview.
-3. Keep **Cyber Resilience Act (CRA)** selected.
-4. Enter a product name and a detailed technical description, or upload a
-   PDF, DOCX, TXT, Markdown, or image specification.
-5. Select **Generate Assessment**.
-6. Review the classification, applicable obligations, verification questions,
-   evidence, and generated report in the assessment workspace.
-
-Better descriptions produce better matching. Include the product's purpose,
-network interfaces, deployment environment, user roles, update mechanism,
-security features, and whether it performs critical or security-related
-functions.
-
-## Common operations
-
-View service status and recent logs:
-
-```bash
-docker compose ps
-docker compose logs --tail=100 backend
-docker compose logs --tail=100 adk
-```
-
-Rebuild after changing source code:
-
-```bash
-docker compose up --build -d
-```
-
-Stop the application without deleting persisted data:
-
-```bash
-docker compose down
-```
-
-## Troubleshooting
-
-### Frontend fails to mount `maintenance.json`
-
-The host path must be a regular file, not a directory:
-
-```bash
-test -f maintenance.json
-```
-
-Create it with the JSON shown in the configuration section if it is missing.
-
-### Startup waits for model downloads
-
-Follow the one-time pull jobs:
-
-```bash
-docker compose logs -f ollama-model-pull ollama-model-pull-embedding
-```
-
-Both jobs should eventually exit with code `0`.
-
-### Login fails with `admin` / `admin`
-
-The default credentials are seeded only into an empty database. Existing
-Docker volumes retain password changes and created users across rebuilds.
-
-### Ingestion cannot read the CRA source
-
-Verify that `outputs/CRA_requirements_statemachine.md` exists and that the
-`outputs/` directory is mounted into the backend and ADK services:
-
-```bash
-docker compose exec backend test -f /app/outputs/CRA_requirements_statemachine.md
-docker compose exec adk test -f /app/outputs/CRA_requirements_statemachine.md
-```
-
-### Ingestion or assessment returns a model error
-
-For `MODEL_TYPE=LOCAL`, verify Ollama and its models:
-
-```bash
-curl -fsS http://localhost:11434/api/tags
-docker compose logs --tail=100 ollama backend
-```
-
-For `MODEL_TYPE=OFFLOAD`, verify that `GOOGLE_API_KEY` is valid and inspect the
-backend logs for quota or rate-limit errors.
-
-## Further documentation
-
-- [Architecture and workflow](ARCHITECTURE.md)
-- [CRA agent internals](cra_agents/README.md)
-- [Ingestion details](INGESTION_v2.md)
-
-## License
-
-The original software in this repository is licensed under the
-[Apache License 2.0](LICENSE).
-
-Third-party dependencies, EU legal texts, and other third-party materials are
-subject to their respective licenses and terms and are not relicensed by this
-project.
+This project was funded by the WINGS4 project.

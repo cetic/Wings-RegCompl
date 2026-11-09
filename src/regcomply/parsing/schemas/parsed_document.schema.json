@@ -1,0 +1,342 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/regkg/schemas/parsed_document.schema.json",
+  "title": "ParsedDocument",
+  "description": "Output of pipeline step B1 (deterministic parsers). One file per uploaded source document. Produced by the EUR-Lex Formex XML, HTML, or PDF parser, wrapped with a 'document' header.",
+  "type": "object",
+  "required": [
+    "document",
+    "report",
+    "nodes"
+  ],
+  "properties": {
+    "document": {
+      "type": "object",
+      "required": [
+        "id",
+        "shortName",
+        "identifier",
+        "docType",
+        "sourceFormat",
+        "sourceFile",
+        "sourceHash",
+        "parser",
+        "parserVersion"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^kg:[a-z0-9-]+$",
+          "description": "Work id, e.g. kg:cra"
+        },
+        "versionId": {
+          "type": "string",
+          "description": "e.g. cra:v.oj-2024"
+        },
+        "shortName": {
+          "type": "string",
+          "description": "Prefix used in citations, e.g. CRA, AIA, NIS2"
+        },
+        "identifier": {
+          "type": "string",
+          "description": "Official identifier, e.g. (EU) 2024/2847"
+        },
+        "title": {
+          "type": "string"
+        },
+        "docType": {
+          "enum": [
+            "Regulation",
+            "Directive",
+            "Decision",
+            "DelegatedAct",
+            "ImplementingAct",
+            "NationalLaw",
+            "InternationalStandard",
+            "EuropeanStandard",
+            "TechnicalSpecification",
+            "TechnicalReport",
+            "Guidance",
+            "CertificationScheme",
+            "CommonSpecification"
+          ]
+        },
+        "isBinding": {
+          "type": "boolean"
+        },
+        "eliUri": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "publicationDate": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date"
+        },
+        "sourceFormat": {
+          "enum": [
+            "html",
+            "fmx",
+            "pdf"
+          ]
+        },
+        "sourceFile": {
+          "type": "string"
+        },
+        "sourceHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "parser": {
+          "type": "string"
+        },
+        "parserVersion": {
+          "type": "string"
+        }
+      }
+    },
+    "report": {
+      "type": "object",
+      "required": [
+        "errors",
+        "sequence_errors"
+      ],
+      "properties": {
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sequence_errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ambiguities": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "articles_found": {
+          "type": "integer"
+        },
+        "annexes_found": {
+          "type": "integer"
+        },
+        "recitals_found": {
+          "type": "integer"
+        },
+        "node_types": {
+          "type": "object"
+        }
+      },
+      "description": "A document with non-empty 'errors' or 'sequence_errors' MUST NOT go to extraction without an admin override."
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "ptype",
+          "local_id",
+          "citation",
+          "parent",
+          "text",
+          "is_normative",
+          "children"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "e.g. cra:art_14.par_2.let_a (parser path; stable for a given source)"
+          },
+          "ptype": {
+            "enum": [
+              "preamble",
+              "recital",
+              "chapter",
+              "section",
+              "article",
+              "paragraph",
+              "point",
+              "subparagraph",
+              "definition",
+              "annex",
+              "amending_annex",
+              "table_annex",
+              "correlation_annex",
+              "part",
+              "annex_chapter",
+              "coded_point",
+              "sector",
+              "subsector",
+              "entity_type"
+            ]
+          },
+          "local_id": {
+            "type": "string"
+          },
+          "citation": {
+            "type": "string",
+            "description": "Canonical human citation, e.g. 'CRA Art. 14(2)(a)'. UNIQUE within a document."
+          },
+          "parent": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "heading": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "is_normative": {
+            "type": "boolean"
+          },
+          "marker": {
+            "type": "string",
+            "description": "letter | num | roman | dash | paragraph | decN | subpar | ''"
+          },
+          "children": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "definitions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "provision",
+          "term"
+        ],
+        "properties": {
+          "provision": {
+            "type": "string"
+          },
+          "term": {
+            "type": "string"
+          },
+          "alias": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "by_reference": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "external_refs": {
+      "type": "array"
+    },
+    "modals": {
+      "type": "object"
+    },
+    "durations": {
+      "type": "array"
+    },
+    "application_dates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "kind",
+          "date",
+          "provision"
+        ],
+        "properties": {
+          "kind": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "provision": {
+            "type": "string"
+          },
+          "context": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "amendments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "in": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "operation": {
+            "type": "string"
+          },
+          "target_act": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "target": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "inserted_text": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "correlations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "repealed": {
+            "type": "string"
+          },
+          "this_act": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

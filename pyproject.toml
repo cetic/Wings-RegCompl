@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "regcomply"
+version = "0.1.0"
+description = "EU regulatory document parsing and requirement extraction tools"
+readme = "README.md"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+requires-python = ">=3.12,<3.15"
+classifiers = [
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+]
+dependencies = [
+  "beautifulsoup4==4.15.0",
+  "google-adk==1.39.1",
+  "jsonschema==4.26.0",
+  "litellm==1.104.2",
+  "lxml==6.1.3",
+  "pdfplumber==0.11.10",
+  "pydantic==2.14.0",
+  "pydantic-settings==2.15.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "build>=1.2,<2",
+  "pytest>=9,<10",
+  "ruff>=0.16,<0.17",
+]
+ontology = ["rdflib==7.6.0"]
+
+[project.scripts]
+regcomply-parse = "regcomply.cli_parse:main"
+regcomply-extract = "regcomply.cli_extract:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"regcomply.extraction" = ["bootstrap_profiles.json", "prompts/*.md", "schemas/*.json"]
+"regcomply.parsing" = ["schemas/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+extend-exclude = ["src/regcomply/parsing/reference/**"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.per-file-ignores]
+"ontology/generate_taxonomy.py" = ["E501"]

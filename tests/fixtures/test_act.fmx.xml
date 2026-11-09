@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ACT xmlns="http://formex.publications.europa.eu/schema/formex-4">
+  <PREAMBLE>
+    <RECITAL><NO.RECITAL>(1)</NO.RECITAL><TXT>Legal acts require clear structure.</TXT></RECITAL>
+  </PREAMBLE>
+  <BODY>
+    <CHAPTER><NO.CHAPTER>I</NO.CHAPTER><TI.CHAPTER><TI>General</TI></TI.CHAPTER>
+      <ARTICLE>
+        <TI.ART><NO.ART>Article 1</NO.ART><TI>Purpose</TI></TI.ART>
+        <PARAG>
+          <NO.PARAG>1.</NO.PARAG>
+          <ALINEA>Manufacturers shall act.</ALINEA>
+          <LIST><ITEM><NO.POINT>(a)</NO.POINT><ALINEA>Keep records.</ALINEA></ITEM></LIST>
+        </PARAG>
+      </ARTICLE>
+    </CHAPTER>
+  </BODY>
+</ACT>

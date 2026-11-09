@@ -1,0 +1,10 @@
+{
+  "CRA": {
+    "articles": ["1", "2", "3"],
+    "annexes": ["III", "IV"]
+  },
+  "AIA": {
+    "articles": ["1", "2", "3", "5", "6"],
+    "annexes": ["I", "III"]
+  }
+}

@@ -1,0 +1,857 @@
+@prefix rk:    <https://example.org/regkg#> .
+@prefix owl:   <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
+@prefix skos:  <http://www.w3.org/2004/02/skos/core#> .
+@prefix dct:   <http://purl.org/dc/terms/> .
+@prefix prov:  <http://www.w3.org/ns/prov#> .
+@prefix eli:   <http://data.europa.eu/eli/ontology#> .
+
+###############################################################################
+#  RegKG — Ontology for a regulatory and standards knowledge graph
+#
+#  Guiding principle: the T-Box (this file) is STABLE. Everything specific
+#  to an instrument (roles, product categories, risk levels, topics...) is
+#  instantiated in the A-Box (individuals), never added as a class.
+#  Ingesting a new text means adding data, not changing the ontology.
+#
+#  8 layers:
+#   L1 Document      : instruments, versions, structure (provisions)
+#   L2 Normative     : atomic deontic statements extracted from provisions
+#   L3 Domain        : roles, subject matter, terms, categories, artefacts
+#   L4 Pivot         : shared topic taxonomy (mapping hub)
+#   L5 Relations     : cross-document links, amendments, reified mappings
+#   L6 Provenance    : extraction traceability (PROV-O)
+#   L7 Applicability : questions, applicability rules, triggers (v0.2)
+#   L8 Assessment    : private assessments of an object (v0.2) — NEVER stored
+#                     in the shared knowledge base (see section L8)
+#
+#  v0.2: each main class/property has rk:lpgLabel or rk:lpgRelationship
+#  set to its name in the Neo4j graph (LPG model).
+###############################################################################
+
+<https://example.org/regkg>
+    a owl:Ontology ;
+    dct:title "RegKG — Regulatory & Standards Knowledge Graph Ontology"@en ;
+    dct:description "Generic ontology for ingesting regulations (CRA, NIS2, AI Act...) and standards (IEC 62443, ISO 27001...) into a single, queryable graph."@en ;
+    owl:versionInfo "0.2.0" ;
+    rdfs:seeAlso eli:, skos:, prov: .
+
+###############################################################################
+#  L1 — DOCUMENT LAYER
+###############################################################################
+
+rk:NormativeDocument a owl:Class ;
+    rdfs:label "Normative document"@en ;
+    rdfs:comment "Abstract class (work level): the text independent of its versions."@en .
+
+# --- Legal acts ---
+rk:LegalAct a owl:Class ; rdfs:subClassOf rk:NormativeDocument ;
+    rdfs:label "Legal act"@en ;
+    rdfs:comment "Aligned with eli:LegalResource."@en ;
+    skos:closeMatch eli:LegalResource .
+rk:Regulation         a owl:Class ; rdfs:subClassOf rk:LegalAct ; rdfs:label "Regulation"@en .
+rk:Directive          a owl:Class ; rdfs:subClassOf rk:LegalAct ; rdfs:label "Directive"@en .
+rk:Decision           a owl:Class ; rdfs:subClassOf rk:LegalAct ; rdfs:label "Decision"@en .
+rk:DelegatedAct       a owl:Class ; rdfs:subClassOf rk:LegalAct ; rdfs:label "Delegated act"@en .
+rk:ImplementingAct    a owl:Class ; rdfs:subClassOf rk:LegalAct ; rdfs:label "Implementing act"@en .
+rk:NationalLaw        a owl:Class ; rdfs:subClassOf rk:LegalAct ;
+    rdfs:label "National law"@en ;
+    rdfs:comment "Includes transposition laws (e.g. the Belgian NIS2 law)."@en .
+
+# --- Standards and frameworks ---
+rk:Standard a owl:Class ; rdfs:subClassOf rk:NormativeDocument ; rdfs:label "Standard"@en .
+rk:InternationalStandard  a owl:Class ; rdfs:subClassOf rk:Standard ; rdfs:label "International standard (IEC/ISO)"@en .
+rk:EuropeanStandard       a owl:Class ; rdfs:subClassOf rk:Standard ; rdfs:label "European standard (EN)"@en .
+rk:TechnicalSpecification a owl:Class ; rdfs:subClassOf rk:Standard ; rdfs:label "Technical specification (TS)"@en .
+rk:TechnicalReport        a owl:Class ; rdfs:subClassOf rk:Standard ; rdfs:label "Technical report (TR)"@en .
+
+# --- Other instruments ---
+rk:CommonSpecification  a owl:Class ; rdfs:subClassOf rk:NormativeDocument ; rdfs:label "Common specification"@en .
+rk:CertificationScheme  a owl:Class ; rdfs:subClassOf rk:NormativeDocument ; rdfs:label "Certification scheme"@en .
+rk:Guidance             a owl:Class ; rdfs:subClassOf rk:NormativeDocument ;
+    rdfs:label "Guidance / guide"@en ;
+    rdfs:comment "Non-binding Commission guidance, ENISA FAQs, and implementation guides."@en .
+
+rk:Series a owl:Class ;
+    rdfs:label "Document series"@en ;
+    rdfs:comment "A family of documents (e.g. IEC 62443, ISO/IEC 27000)."@en .
+
+# --- Versions (expression level) ---
+rk:DocumentVersion a owl:Class ;
+    rdfs:label "Document version"@en ;
+    rdfs:comment "Edition, consolidated version, corrigendum, or draft. Provisions are attached to a version, not to the abstract work."@en .
+
+# --- Structure ---
+rk:Provision a owl:Class ;
+    rdfs:label "Provision (structural unit)"@en ;
+    rdfs:comment "The UNIQUE class for every structural unit (article, paragraph, point, clause, annex, recital, requirement...). Its type is given by rk:provisionType (SKOS), allowing any document structure to be ingested without adding a class."@en .
+
+rk:Organisation a owl:Class ;
+    rdfs:subClassOf prov:Agent ;
+    rdfs:label "Organization"@en ;
+    rdfs:comment "A real-world organization: IEC, CEN-CENELEC, the Commission, ENISA, a national CSIRT..."@en .
+
+rk:Jurisdiction a owl:Class ; rdfs:subClassOf skos:Concept ;
+    rdfs:label "Jurisdiction / territory"@en .
+
+###############################################################################
+#  L2 — NORMATIVE LAYER (deontic statements)
+###############################################################################
+
+rk:NormativeStatement a owl:Class ;
+    rdfs:label "Normative statement"@en ;
+    rdfs:comment "An atomic rule extracted from a provision: WHO must do WHAT, to WHAT, WHEN, and UNDER WHICH CONDITION. A provision may contain several statements (e.g. CRA Art. 14(2) contains three obligations with 24-hour, 72-hour, and 14-day deadlines)."@en .
+
+rk:Obligation     a owl:Class ; rdfs:subClassOf rk:NormativeStatement ; rdfs:label "Obligation / requirement (shall)"@en .
+rk:Prohibition    a owl:Class ; rdfs:subClassOf rk:NormativeStatement ; rdfs:label "Prohibition (shall not)"@en .
+rk:Permission     a owl:Class ; rdfs:subClassOf rk:NormativeStatement ; rdfs:label "Permission (may)"@en .
+rk:Recommendation a owl:Class ; rdfs:subClassOf rk:NormativeStatement ; rdfs:label "Recommendation (should)"@en .
+rk:Exemption      a owl:Class ; rdfs:subClassOf rk:NormativeStatement ; rdfs:label "Exemption / derogation"@en .
+rk:LegalEffect    a owl:Class ; rdfs:subClassOf rk:NormativeStatement ;
+    rdfs:label "Legal effect"@en ;
+    rdfs:comment "A constitutive rule without an action addressee: presumption of conformity, deemed compliance, application date..."@en .
+
+rk:AllDisjointStatements a owl:AllDisjointClasses ;
+    owl:members ( rk:Obligation rk:Prohibition rk:Permission rk:Recommendation rk:Exemption rk:LegalEffect ) .
+
+rk:Condition a owl:Class ;
+    rdfs:label "Condition"@en ;
+    rdfs:comment "An applicability condition or trigger (scope, category, event, threshold)."@en .
+
+rk:Deadline a owl:Class ;
+    rdfs:label "Deadline"@en ;
+    rdfs:comment "A duration relative to an anchor event (e.g. PT24H after becoming aware)."@en .
+
+rk:EventType a owl:Class ;
+    rdfs:subClassOf skos:Concept ;
+    rdfs:label "Event type"@en ;
+    rdfs:comment "A triggering or anchor event (awareness of an actively exploited vulnerability, placing on the market, substantial modification...)."@en .
+
+rk:ApplicabilityPeriod a owl:Class ;
+    rdfs:label "Applicability period"@en ;
+    rdfs:comment "Allows dates to differ by provision (CRA: Art. 14 on 11/09/2026, Chapter IV on 11/06/2026, the rest on 11/12/2027)."@en .
+
+rk:Sanction a owl:Class ; rdfs:label "Sanction"@en .
+
+###############################################################################
+#  L3 — DOMAIN LAYER (instantiated per document)
+###############################################################################
+
+rk:Role a owl:Class ;
+    rdfs:subClassOf skos:Concept ;
+    rdfs:label "Role"@en ;
+    rdfs:comment "A role defined by an instrument (CRA manufacturer, IEC product supplier, NIS2 essential entity, AI Act provider, ENISA as recipient...). Roles are individuals, not classes. Equivalences across instruments use skos:closeMatch / exactMatch."@en .
+
+rk:SubjectMatter a owl:Class ;
+    rdfs:subClassOf skos:Concept ;
+    rdfs:label "Subject matter"@en ;
+    rdfs:comment "What the rule concerns: a product, process, system, service, entity, data, or AI system."@en .
+
+rk:Term a owl:Class ;
+    rdfs:subClassOf skos:Concept ;
+    rdfs:label "Term"@en ;
+    rdfs:comment "A term defined in an instrument. Two instruments defining “component” produce TWO rk:Term individuals linked by skos:closeMatch; definitions are never merged."@en .
+
+rk:Definition a owl:Class ;
+    rdfs:label "Definition"@en ;
+    rdfs:comment "A term definition within an instrument's scope. It may be direct (text) or by reference (CRA Art. 3(43) “incident” → NIS2 Art. 6(6))."@en .
+
+rk:Category a owl:Class ;
+    rdfs:subClassOf skos:Concept ;
+    rdfs:label "Classification category"@en ;
+    rdfs:comment "A value in a classification scheme: CRA product classes, AI Act risk levels, NIS2 essential/important entities, IEC 62443-3-3 SL 1-4, or IEC 62443-4-1 maturity levels."@en .
+
+rk:ClassificationScheme a owl:Class ;
+    rdfs:subClassOf skos:ConceptScheme ;
+    rdfs:label "Classification scheme"@en .
+
+rk:ArtefactType a owl:Class ;
+    rdfs:subClassOf skos:Concept ;
+    rdfs:label "Artefact / evidence type"@en ;
+    rdfs:comment "A required or produced deliverable: SBOM, EU declaration of conformity, technical documentation, threat model, CE marking, test report, notification..."@en .
+
+rk:Procedure a owl:Class ;
+    rdfs:subClassOf skos:Concept ;
+    rdfs:label "Procedure"@en ;
+    rdfs:comment "A conformity assessment procedure (modules A, B+C, H, certification), notification procedure, or market surveillance procedure..."@en .
+
+rk:Channel a owl:Class ;
+    rdfs:subClassOf skos:Concept ;
+    rdfs:label "Channel"@en ;
+    rdfs:comment "A prescribed means of carrying out an obligation (CRA single reporting platform, contact point...)."@en .
+
+###############################################################################
+#  L4 — PIVOT LAYER (shared topic taxonomy)
+###############################################################################
+
+rk:Topic a owl:Class ;
+    rdfs:subClassOf skos:Concept ;
+    rdfs:label "Topic / control objective"@en ;
+    rdfs:comment "Mapping hub. Each normative statement is linked to one or more topics. With N instruments, this requires N links to the pivot instead of N² direct mappings. The taxonomy (rk:TopicScheme) is extensible and hierarchical (skos:broader)."@en .
+
+rk:TopicScheme a rk:ClassificationScheme ;
+    skos:prefLabel "RegKG topic taxonomy"@en .
+
+###############################################################################
+#  L5 — RELATIONSHIP LAYER (reified mappings)
+###############################################################################
+
+rk:Mapping a owl:Class ;
+    rdfs:label "Mapping"@en ;
+    rdfs:comment "A REIFIED mapping between two elements (statements, provisions, terms, roles). It is reified because a mapping is an interpretive assertion: it has a type, coverage, rationale, author, and review status."@en .
+
+rk:HarmonisationListing a owl:Class ;
+    rdfs:label "Official Journal listing (harmonised standard)"@en ;
+    rdfs:comment "The “harmonised” status is not a property of the standard, but a dated relationship between a standard, an act, and an Official Journal reference, possibly with restrictions."@en .
+
+###############################################################################
+#  L6 — PROVENANCE LAYER
+###############################################################################
+
+rk:SourceSpan a owl:Class ;
+    rdfs:label "Source span"@en ;
+    rdfs:comment "Exact location in the source file (page, offsets, hash)."@en .
+
+rk:ExtractionActivity a owl:Class ;
+    rdfs:subClassOf prov:Activity ;
+    rdfs:label "Extraction activity"@en ;
+    rdfs:comment "Execution of the ingestion pipeline (parser, LLM, human annotator)."@en .
+
+###############################################################################
+#  CONTROLLED VOCABULARIES (SKOS) — stable part of the T-Box
+###############################################################################
+
+rk:ProvisionTypeScheme a skos:ConceptScheme ; skos:prefLabel "Provision types"@en .
+rk:ProvisionType a owl:Class ; rdfs:subClassOf skos:Concept .
+rk:pt_Part        a rk:ProvisionType ; skos:inScheme rk:ProvisionTypeScheme ; skos:prefLabel "Part / Title"@en .
+rk:pt_Chapter     a rk:ProvisionType ; skos:inScheme rk:ProvisionTypeScheme ; skos:prefLabel "Chapter"@en .
+rk:pt_Section     a rk:ProvisionType ; skos:inScheme rk:ProvisionTypeScheme ; skos:prefLabel "Section"@en .
+rk:pt_Article     a rk:ProvisionType ; skos:inScheme rk:ProvisionTypeScheme ; skos:prefLabel "Article"@en .
+rk:pt_Paragraph   a rk:ProvisionType ; skos:inScheme rk:ProvisionTypeScheme ; skos:prefLabel "Paragraph"@en .
+rk:pt_Point       a rk:ProvisionType ; skos:inScheme rk:ProvisionTypeScheme ; skos:prefLabel "Point / item"@en .
+rk:pt_Annex       a rk:ProvisionType ; skos:inScheme rk:ProvisionTypeScheme ; skos:prefLabel "Annex"@en .
+rk:pt_Recital     a rk:ProvisionType ; skos:inScheme rk:ProvisionTypeScheme ; skos:prefLabel "Recital"@en .
+rk:pt_Clause      a rk:ProvisionType ; skos:inScheme rk:ProvisionTypeScheme ; skos:prefLabel "Clause (standard)"@en .
+rk:pt_Practice    a rk:ProvisionType ; skos:inScheme rk:ProvisionTypeScheme ; skos:prefLabel "Practice (group of requirements)"@en .
+rk:pt_Requirement a rk:ProvisionType ; skos:inScheme rk:ProvisionTypeScheme ; skos:prefLabel "Identified requirement (e.g. SM-1, CR 1.1)"@en .
+rk:pt_DefinitionEntry a rk:ProvisionType ; skos:inScheme rk:ProvisionTypeScheme ; skos:prefLabel "Definition entry"@en .
+rk:pt_Note        a rk:ProvisionType ; skos:inScheme rk:ProvisionTypeScheme ; skos:prefLabel "Note / example"@en .
+rk:pt_Table       a rk:ProvisionType ; skos:inScheme rk:ProvisionTypeScheme ; skos:prefLabel "Table / figure"@en .
+
+rk:ModalityScheme a skos:ConceptScheme ; skos:prefLabel "Deontic modalities"@en .
+rk:Modality a owl:Class ; rdfs:subClassOf skos:Concept .
+rk:mod_shall    a rk:Modality ; skos:inScheme rk:ModalityScheme ; skos:prefLabel "shall"@en .
+rk:mod_shallNot a rk:Modality ; skos:inScheme rk:ModalityScheme ; skos:prefLabel "shall not"@en .
+rk:mod_should   a rk:Modality ; skos:inScheme rk:ModalityScheme ; skos:prefLabel "should"@en .
+rk:mod_may      a rk:Modality ; skos:inScheme rk:ModalityScheme ; skos:prefLabel "may"@en .
+rk:mod_deemed   a rk:Modality ; skos:inScheme rk:ModalityScheme ; skos:prefLabel "is deemed"@en .
+
+rk:MappingTypeScheme a skos:ConceptScheme ; skos:prefLabel "Mapping types"@en .
+rk:MappingType a owl:Class ; rdfs:subClassOf skos:Concept .
+rk:mt_equivalent          a rk:MappingType ; skos:inScheme rk:MappingTypeScheme ; skos:prefLabel "equivalent"@en .
+rk:mt_satisfies           a rk:MappingType ; skos:inScheme rk:MappingTypeScheme ; skos:prefLabel "satisfies (source → target)"@en .
+rk:mt_contributesTo       a rk:MappingType ; skos:inScheme rk:MappingTypeScheme ; skos:prefLabel "contributes to (partial)"@en .
+rk:mt_presumptionOfConformity a rk:MappingType ; skos:inScheme rk:MappingTypeScheme ;
+    skos:prefLabel "confers a presumption of conformity"@en ;
+    skos:scopeNote "Formal legal effect (a harmonised standard published in the Official Journal, or deemed compliance between acts). Distinguish this from mt_satisfies, which is a technical assessment."@en .
+rk:mt_broader             a rk:MappingType ; skos:inScheme rk:MappingTypeScheme ; skos:prefLabel "broader than"@en .
+rk:mt_narrower            a rk:MappingType ; skos:inScheme rk:MappingTypeScheme ; skos:prefLabel "narrower than"@en .
+rk:mt_related             a rk:MappingType ; skos:inScheme rk:MappingTypeScheme ; skos:prefLabel "related"@en .
+rk:mt_conflicts           a rk:MappingType ; skos:inScheme rk:MappingTypeScheme ; skos:prefLabel "conflicts with"@en .
+
+rk:CoverageScheme a skos:ConceptScheme ; skos:prefLabel "Coverage levels"@en .
+rk:Coverage a owl:Class ; rdfs:subClassOf skos:Concept .
+rk:cov_full    a rk:Coverage ; skos:inScheme rk:CoverageScheme ; skos:prefLabel "full"@en .
+rk:cov_partial a rk:Coverage ; skos:inScheme rk:CoverageScheme ; skos:prefLabel "partial"@en .
+rk:cov_none    a rk:Coverage ; skos:inScheme rk:CoverageScheme ; skos:prefLabel "none"@en .
+
+rk:ReviewStatusScheme a skos:ConceptScheme ; skos:prefLabel "Review status"@en .
+rk:ReviewStatus a owl:Class ; rdfs:subClassOf skos:Concept .
+rk:rs_proposed  a rk:ReviewStatus ; skos:inScheme rk:ReviewStatusScheme ; skos:prefLabel "proposed (not validated)"@en .
+rk:rs_validated a rk:ReviewStatus ; skos:inScheme rk:ReviewStatusScheme ; skos:prefLabel "expert-validated"@en .
+rk:rs_rejected  a rk:ReviewStatus ; skos:inScheme rk:ReviewStatusScheme ; skos:prefLabel "rejected"@en .
+
+rk:DocStatusScheme a skos:ConceptScheme ; skos:prefLabel "Document status"@en .
+rk:DocStatus a owl:Class ; rdfs:subClassOf skos:Concept .
+rk:ds_draft      a rk:DocStatus ; skos:inScheme rk:DocStatusScheme ; skos:prefLabel "draft"@en .
+rk:ds_published  a rk:DocStatus ; skos:inScheme rk:DocStatusScheme ; skos:prefLabel "published / in force"@en .
+rk:ds_underReview a rk:DocStatus ; skos:inScheme rk:DocStatusScheme ; skos:prefLabel "under review"@en .
+rk:ds_withdrawn  a rk:DocStatus ; skos:inScheme rk:DocStatusScheme ; skos:prefLabel "withdrawn / repealed"@en .
+
+rk:SubjectMatterKindScheme a skos:ConceptScheme ; skos:prefLabel "Kinds of regulated subject matter"@en .
+rk:smk_product      a skos:Concept ; skos:inScheme rk:SubjectMatterKindScheme ; skos:prefLabel "product"@en .
+rk:smk_process      a skos:Concept ; skos:inScheme rk:SubjectMatterKindScheme ; skos:prefLabel "process"@en .
+rk:smk_system       a skos:Concept ; skos:inScheme rk:SubjectMatterKindScheme ; skos:prefLabel "system"@en .
+rk:smk_service      a skos:Concept ; skos:inScheme rk:SubjectMatterKindScheme ; skos:prefLabel "service"@en .
+rk:smk_organisation a skos:Concept ; skos:inScheme rk:SubjectMatterKindScheme ; skos:prefLabel "organization / entity"@en .
+rk:smk_data         a skos:Concept ; skos:inScheme rk:SubjectMatterKindScheme ; skos:prefLabel "data"@en .
+
+###############################################################################
+#  PROPERTIES — L1 Document
+###############################################################################
+
+rk:identifier a owl:DatatypeProperty ; rdfs:label "official identifier"@en ;
+    rdfs:comment "E.g. “(EU) 2024/2847”, “IEC 62443-4-1:2018”."@en ; rdfs:range xsd:string .
+rk:shortName a owl:DatatypeProperty ; rdfs:label "short name"@en ; rdfs:range xsd:string .
+rk:eliUri a owl:DatatypeProperty ; rdfs:label "ELI URI"@en ; rdfs:range xsd:anyURI .
+
+rk:issuedBy a owl:ObjectProperty ; rdfs:domain rk:NormativeDocument ; rdfs:range rk:Organisation .
+rk:inSeries a owl:ObjectProperty ; rdfs:domain rk:NormativeDocument ; rdfs:range rk:Series .
+rk:jurisdiction a owl:ObjectProperty ; rdfs:range rk:Jurisdiction .
+rk:isBinding a owl:DatatypeProperty ; rdfs:domain rk:NormativeDocument ; rdfs:range xsd:boolean ;
+    rdfs:comment "Binding in its own right (regulation: yes; voluntary standard: no)."@en .
+
+rk:hasVersion a owl:ObjectProperty ; rdfs:domain rk:NormativeDocument ; rdfs:range rk:DocumentVersion .
+rk:versionOf  a owl:ObjectProperty ; owl:inverseOf rk:hasVersion .
+rk:edition    a owl:DatatypeProperty ; rdfs:domain rk:DocumentVersion ; rdfs:range xsd:string .
+rk:publicationDate a owl:DatatypeProperty ; rdfs:range xsd:date .
+rk:entryIntoForce  a owl:DatatypeProperty ; rdfs:range xsd:date .
+rk:docStatus  a owl:ObjectProperty ; rdfs:domain rk:DocumentVersion ; rdfs:range rk:DocStatus .
+rk:supersedesVersion a owl:ObjectProperty ; rdfs:domain rk:DocumentVersion ; rdfs:range rk:DocumentVersion .
+
+rk:inVersion a owl:ObjectProperty ; rdfs:domain rk:Provision ; rdfs:range rk:DocumentVersion ;
+    rdfs:comment "The version to which the provision belongs."@en .
+rk:partOf a owl:ObjectProperty, owl:TransitiveProperty ;
+    rdfs:domain rk:Provision ; rdfs:range rk:Provision ; rdfs:label "is part of"@en .
+rk:hasPart a owl:ObjectProperty ; owl:inverseOf rk:partOf .
+rk:provisionType a owl:ObjectProperty ; rdfs:domain rk:Provision ; rdfs:range rk:ProvisionType .
+rk:localId a owl:DatatypeProperty ; rdfs:domain rk:Provision ;
+    rdfs:comment "Local numbering (“14”, “2”, “a”, “SM-1”, “5.2”)."@en .
+rk:citation a owl:DatatypeProperty ; rdfs:domain rk:Provision ;
+    rdfs:comment "Canonical human-readable reference (“CRA Art. 14(2)(a)”)."@en .
+rk:heading a owl:DatatypeProperty ; rdfs:domain rk:Provision ; rdfs:range xsd:string .
+rk:ordinal a owl:DatatypeProperty ; rdfs:domain rk:Provision ; rdfs:range xsd:integer .
+rk:text a owl:DatatypeProperty ; rdfs:domain rk:Provision ; rdfs:range xsd:string ;
+    rdfs:comment "Full text. OPTIONAL: for copyrighted standards (IEC, ISO), store it only when the license permits; otherwise use rk:summary + rk:textHash."@en .
+rk:summary a owl:DatatypeProperty ; rdfs:range xsd:string .
+rk:textHash a owl:DatatypeProperty ; rdfs:domain rk:Provision ; rdfs:range xsd:string ;
+    rdfs:comment "Text fingerprint (SHA-256): detects changes between versions without storing the text."@en .
+rk:isNormative a owl:DatatypeProperty ; rdfs:domain rk:Provision ; rdfs:range xsd:boolean ;
+    rdfs:comment "False for recitals, notes, informative annexes, and “rationale and supplemental guidance”."@en .
+rk:interprets a owl:ObjectProperty ; rdfs:domain rk:Provision ; rdfs:range rk:Provision ;
+    rdfs:comment "Recital → article it explains; guidance → provision it explains."@en .
+
+###############################################################################
+#  PROPERTIES — L2 Normative
+###############################################################################
+
+rk:derivedFrom a owl:ObjectProperty ; rdfs:domain rk:NormativeStatement ; rdfs:range rk:Provision ;
+    rdfs:comment "Source provision for the statement."@en .
+rk:modality a owl:ObjectProperty ; rdfs:domain rk:NormativeStatement ; rdfs:range rk:Modality .
+rk:addressee a owl:ObjectProperty ; rdfs:domain rk:NormativeStatement ; rdfs:range rk:Role ;
+    rdfs:comment "The role responsible for the obligation."@en .
+rk:beneficiary a owl:ObjectProperty ; rdfs:domain rk:NormativeStatement ; rdfs:range rk:Role ;
+    rdfs:comment "Who benefits (e.g. users, consumers)."@en .
+rk:recipient a owl:ObjectProperty ; rdfs:domain rk:NormativeStatement ;
+    rdfs:comment "Who the action is addressed to (e.g. coordinating CSIRT, ENISA). A role or organization."@en .
+rk:action a owl:DatatypeProperty ; rdfs:domain rk:NormativeStatement ; rdfs:range xsd:string ;
+    rdfs:comment "Normalized action verb (e.g. “notify”, “draw up”, “affix”, “test”)."@en .
+rk:statement a owl:DatatypeProperty ; rdfs:domain rk:NormativeStatement ; rdfs:range xsd:string ;
+    rdfs:comment "Atomic restatement of the rule."@en .
+rk:concerns a owl:ObjectProperty ; rdfs:domain rk:NormativeStatement ; rdfs:range rk:SubjectMatter .
+rk:hasCondition a owl:ObjectProperty ; rdfs:domain rk:NormativeStatement ; rdfs:range rk:Condition .
+rk:hasDeadline  a owl:ObjectProperty ; rdfs:domain rk:NormativeStatement ; rdfs:range rk:Deadline .
+rk:viaChannel   a owl:ObjectProperty ; rdfs:domain rk:NormativeStatement ; rdfs:range rk:Channel .
+rk:requiresArtefact a owl:ObjectProperty ; rdfs:domain rk:NormativeStatement ; rdfs:range rk:ArtefactType .
+rk:requiresProcedure a owl:ObjectProperty ; rdfs:domain rk:NormativeStatement ; rdfs:range rk:Procedure .
+rk:exceptionTo a owl:ObjectProperty ; rdfs:domain rk:NormativeStatement ; rdfs:range rk:NormativeStatement .
+rk:hasApplicability a owl:ObjectProperty ; rdfs:range rk:ApplicabilityPeriod ;
+    rdfs:comment "Applies to a statement or provision (inherited by descendants unless overridden)."@en .
+rk:appliesFrom  a owl:DatatypeProperty ; rdfs:domain rk:ApplicabilityPeriod ; rdfs:range xsd:date .
+rk:appliesUntil a owl:DatatypeProperty ; rdfs:domain rk:ApplicabilityPeriod ; rdfs:range xsd:date .
+rk:sanctionedBy a owl:ObjectProperty ; rdfs:domain rk:NormativeStatement ; rdfs:range rk:Sanction .
+rk:maxFineAmountEUR a owl:DatatypeProperty ; rdfs:domain rk:Sanction ; rdfs:range xsd:decimal .
+rk:maxFinePercentTurnover a owl:DatatypeProperty ; rdfs:domain rk:Sanction ; rdfs:range xsd:decimal .
+
+rk:duration    a owl:DatatypeProperty ; rdfs:domain rk:Deadline ; rdfs:range xsd:duration .
+rk:anchorEvent a owl:ObjectProperty ; rdfs:domain rk:Deadline ; rdfs:range rk:EventType .
+rk:qualifier   a owl:DatatypeProperty ; rdfs:domain rk:Deadline ; rdfs:range xsd:string ;
+    rdfs:comment "Qualifying phrases such as “without undue delay and in any event within” or “no later than”..."@en .
+
+rk:triggerEvent a owl:ObjectProperty ; rdfs:domain rk:Condition ; rdfs:range rk:EventType .
+rk:appliesToCategory a owl:ObjectProperty ; rdfs:domain rk:Condition ; rdfs:range rk:Category .
+rk:conditionText a owl:DatatypeProperty ; rdfs:domain rk:Condition ; rdfs:range xsd:string .
+
+###############################################################################
+#  PROPERTIES — L3 Domain
+###############################################################################
+
+rk:definedInDocument a owl:ObjectProperty ; rdfs:range rk:NormativeDocument ;
+    rdfs:comment "The instrument that introduces this role, term, category, or artefact."@en .
+rk:playsRole a owl:ObjectProperty ; rdfs:domain rk:Organisation ; rdfs:range rk:Role .
+rk:subjectKind a owl:ObjectProperty ; rdfs:domain rk:SubjectMatter ; rdfs:range skos:Concept .
+
+rk:definesTerm a owl:ObjectProperty ; rdfs:domain rk:Definition ; rdfs:range rk:Term .
+rk:definedIn   a owl:ObjectProperty ; rdfs:domain rk:Definition ; rdfs:range rk:Provision .
+rk:definitionText a owl:DatatypeProperty ; rdfs:domain rk:Definition ; rdfs:range xsd:string .
+rk:definedByReferenceTo a owl:ObjectProperty ; rdfs:domain rk:Definition ; rdfs:range rk:Definition ;
+    rdfs:comment "Definition by reference to another instrument. Key query: propagate changes from the source instrument."@en .
+rk:termOf a owl:ObjectProperty ;
+    rdfs:comment "Links a domain concept (role, subject matter, artefact) to the term that formally defines it."@en ;
+    rdfs:range rk:Term .
+
+rk:inClassificationScheme a owl:ObjectProperty ; rdfs:subPropertyOf skos:inScheme ;
+    rdfs:domain rk:Category ; rdfs:range rk:ClassificationScheme .
+rk:classifiedAs a owl:ObjectProperty ; rdfs:range rk:Category ;
+    rdfs:comment "A regulated subject (or a real instance in a customer's inventory) belongs to a category."@en .
+rk:rank a owl:DatatypeProperty ; rdfs:domain rk:Category ; rdfs:range xsd:integer ;
+    rdfs:comment "Ordering for ordinal scales (SL1 < SL2, Class I < Class II)."@en .
+
+###############################################################################
+#  PROPERTIES — L4 Pivot
+###############################################################################
+
+rk:addressesTopic a owl:ObjectProperty ; rdfs:range rk:Topic ;
+    rdfs:comment "Statement or provision → topic(s) addressed. Foundation for cross-instrument queries."@en .
+
+###############################################################################
+#  PROPERTIES — L5 Cross-document relationships (direct, non-interpretive)
+###############################################################################
+
+rk:documentRelation a owl:ObjectProperty ;
+    rdfs:comment "Super-property for factual relationships between documents or provisions."@en .
+rk:amends    a owl:ObjectProperty ; rdfs:subPropertyOf rk:documentRelation ; rdfs:label "amends"@en .
+rk:repeals   a owl:ObjectProperty ; rdfs:subPropertyOf rk:documentRelation ; rdfs:label "repeals"@en .
+rk:supersedes a owl:ObjectProperty ; rdfs:subPropertyOf rk:documentRelation ; rdfs:label "supersedes"@en .
+rk:transposes a owl:ObjectProperty ; rdfs:subPropertyOf rk:documentRelation ; rdfs:label "transposes"@en ;
+    rdfs:domain rk:NationalLaw ; rdfs:range rk:Directive .
+rk:empowers  a owl:ObjectProperty ; rdfs:subPropertyOf rk:documentRelation ;
+    rdfs:label "empowers (legal basis for a delegated/implementing act)"@en .
+rk:references a owl:ObjectProperty ; rdfs:subPropertyOf rk:documentRelation ; rdfs:label "references"@en .
+rk:normativelyReferences a owl:ObjectProperty ; rdfs:subPropertyOf rk:references ;
+    rdfs:comment "A reference essential to application (e.g. Clause 2 of a standard)."@en .
+rk:informativelyReferences a owl:ObjectProperty ; rdfs:subPropertyOf rk:references .
+rk:withoutPrejudiceTo a owl:ObjectProperty ; rdfs:subPropertyOf rk:documentRelation ;
+    rdfs:label "without prejudice to"@en .
+rk:lexSpecialisFor a owl:ObjectProperty ; rdfs:subPropertyOf rk:documentRelation ;
+    rdfs:label "lex specialis relative to"@en .
+rk:basedOn a owl:ObjectProperty ; rdfs:subPropertyOf rk:documentRelation ;
+    rdfs:label "based on"@en ;
+    rdfs:comment "Lineage (e.g. IEC 62443-4-1 ← ISCI SDLA)."@en .
+
+rk:listedStandard a owl:ObjectProperty ; rdfs:domain rk:HarmonisationListing ; rdfs:range rk:DocumentVersion .
+rk:underAct       a owl:ObjectProperty ; rdfs:domain rk:HarmonisationListing ; rdfs:range rk:LegalAct .
+rk:ojReference    a owl:DatatypeProperty ; rdfs:domain rk:HarmonisationListing ; rdfs:range xsd:string .
+rk:listingDate    a owl:DatatypeProperty ; rdfs:domain rk:HarmonisationListing ; rdfs:range xsd:date .
+rk:restrictions   a owl:DatatypeProperty ; rdfs:domain rk:HarmonisationListing ; rdfs:range xsd:string .
+
+# --- Reified mapping ---
+rk:mappingSource a owl:ObjectProperty ; rdfs:domain rk:Mapping .
+rk:mappingTarget a owl:ObjectProperty ; rdfs:domain rk:Mapping .
+rk:mappingType   a owl:ObjectProperty ; rdfs:domain rk:Mapping ; rdfs:range rk:MappingType .
+rk:coverage      a owl:ObjectProperty ; rdfs:domain rk:Mapping ; rdfs:range rk:Coverage .
+rk:rationale     a owl:DatatypeProperty ; rdfs:domain rk:Mapping ; rdfs:range xsd:string .
+rk:gap           a owl:DatatypeProperty ; rdfs:domain rk:Mapping ; rdfs:range xsd:string ;
+    rdfs:comment "What the source does NOT cover in the target (essential for gap analysis)."@en .
+rk:viaTopic      a owl:ObjectProperty ; rdfs:domain rk:Mapping ; rdfs:range rk:Topic .
+
+###############################################################################
+#  PROPERTIES — L6 Provenance (applies to every extracted node)
+###############################################################################
+
+rk:extractedFrom a owl:ObjectProperty ; rdfs:subPropertyOf prov:wasDerivedFrom ; rdfs:range rk:SourceSpan .
+rk:sourceFile a owl:DatatypeProperty ; rdfs:domain rk:SourceSpan ; rdfs:range xsd:string .
+rk:fileHash   a owl:DatatypeProperty ; rdfs:domain rk:SourceSpan ; rdfs:range xsd:string .
+rk:page       a owl:DatatypeProperty ; rdfs:domain rk:SourceSpan ; rdfs:range xsd:integer .
+rk:charStart  a owl:DatatypeProperty ; rdfs:domain rk:SourceSpan ; rdfs:range xsd:integer .
+rk:charEnd    a owl:DatatypeProperty ; rdfs:domain rk:SourceSpan ; rdfs:range xsd:integer .
+rk:confidence a owl:DatatypeProperty ; rdfs:range xsd:decimal ;
+    rdfs:comment "0.0–1.0; produced by the extractor or mapping author."@en .
+rk:reviewStatus a owl:ObjectProperty ; rdfs:range rk:ReviewStatus .
+rk:method a owl:DatatypeProperty ; rdfs:domain rk:ExtractionActivity ; rdfs:range xsd:string ;
+    rdfs:comment "Examples: “parser:eurlex-xml”, “llm:<model>”, “human”."@en .
+
+###############################################################################
+###############################################################################
+##  v0.2 ADDITIONS (English)
+###############################################################################
+###############################################################################
+
+###############################################################################
+#  ANNOTATIONS — mapping to the Neo4j property graph (LPG)
+###############################################################################
+
+rk:lpgLabel a owl:AnnotationProperty ;
+    rdfs:comment "Neo4j node label used for instances of this class."@en .
+rk:lpgRelationship a owl:AnnotationProperty ;
+    rdfs:comment "Neo4j relationship type used for this object property (direction = domain -> range)."@en .
+rk:lpgProperty a owl:AnnotationProperty ;
+    rdfs:comment "Neo4j node property name used for this datatype property."@en .
+rk:storage a owl:AnnotationProperty ;
+    rdfs:comment "'shared-kb' (Neo4j, shared regulatory knowledge base) or 'private' (per-tenant store, never the shared KB)."@en .
+
+###############################################################################
+#  L1 additions — structure discovered while parsing CRA, Part-IS, GDPR, NIS2,
+#  Machinery Regulation and AI Act
+###############################################################################
+
+rk:pt_Preamble     a rk:ProvisionType ; skos:inScheme rk:ProvisionTypeScheme ; skos:prefLabel "Preamble"@en .
+rk:pt_Subparagraph a rk:ProvisionType ; skos:inScheme rk:ProvisionTypeScheme ;
+    skos:prefLabel "Unnumbered subparagraph"@en ;
+    skos:scopeNote "Text following a completed list inside the same paragraph or point; subsequent lists belong to it."@en .
+rk:pt_AnnexChapter a rk:ProvisionType ; skos:inScheme rk:ProvisionTypeScheme ;
+    skos:prefLabel "Chapter inside an annex"@en ; skos:example "Machinery Regulation Annex III, Part B, chapter 1"@en .
+rk:pt_CodedPoint   a rk:ProvisionType ; skos:inScheme rk:ProvisionTypeScheme ;
+    skos:prefLabel "Coded point"@en ; skos:example "IS.I.OR.230 (EASA Part-IS)"@en .
+rk:pt_Sector       a rk:ProvisionType ; skos:inScheme rk:ProvisionTypeScheme ; skos:prefLabel "Sector row (table annex)"@en .
+rk:pt_Subsector    a rk:ProvisionType ; skos:inScheme rk:ProvisionTypeScheme ; skos:prefLabel "Subsector row (table annex)"@en .
+rk:pt_EntityType   a rk:ProvisionType ; skos:inScheme rk:ProvisionTypeScheme ; skos:prefLabel "Entity type cell (table annex)"@en .
+rk:pt_DashItem     a rk:ProvisionType ; skos:inScheme rk:ProvisionTypeScheme ;
+    skos:prefLabel "Dash list item"@en ; skos:scopeNote "Unnumbered '—' item; local id dash1, dash2, ..."@en .
+rk:pt_CorrelationTable a rk:ProvisionType ; skos:inScheme rk:ProvisionTypeScheme ; skos:prefLabel "Correlation table"@en .
+
+rk:sourceFormat a owl:DatatypeProperty ; rdfs:domain rk:DocumentVersion ; rdfs:range xsd:string ;
+    rdfs:comment "'html' (EUR-Lex TXT/HTML, preferred), 'fmx' (Formex XML), 'pdf' (fallback)."@en .
+rk:sourceHash a owl:DatatypeProperty ; rdfs:domain rk:DocumentVersion ; rdfs:range xsd:string ;
+    rdfs:comment "SHA-256 of the uploaded source file."@en .
+rk:alias a owl:DatatypeProperty ; rdfs:subPropertyOf skos:altLabel ; rdfs:domain rk:Term ;
+    rdfs:comment "Alternative label from the definition itself (\"'domain name system' or 'DNS' means\")."@en .
+
+###############################################################################
+#  L2 additions
+###############################################################################
+
+rk:RetentionPeriod a owl:Class ;
+    rdfs:label "Retention period"@en ;
+    rdfs:comment "MINIMUM duration for keeping something (records, documentation). Not a deadline. Example: Part-IS IS.I.OR.245 'at least 5 years'."@en .
+rk:hasRetention a owl:ObjectProperty ; rdfs:domain rk:NormativeStatement ; rdfs:range rk:RetentionPeriod .
+rk:minDuration a owl:DatatypeProperty ; rdfs:domain rk:RetentionPeriod ; rdfs:range xsd:duration .
+rk:retentionAnchor a owl:ObjectProperty ; rdfs:domain rk:RetentionPeriod ; rdfs:range rk:EventType ;
+    rdfs:comment "Event from which the minimum period runs (e.g. contract terminated, person left)."@en .
+
+rk:triggeredBy a owl:ObjectProperty ; rdfs:domain rk:NormativeStatement ; rdfs:range rk:EventType ;
+    rdfs:comment "OPERATIONAL trigger: the obligation fires when the event occurs. Never turned into a question (see L7)."@en .
+
+rk:DateKindScheme a skos:ConceptScheme ; skos:prefLabel "Kinds of dates"@en .
+rk:DateKind a owl:Class ; rdfs:subClassOf skos:Concept .
+rk:dk_appliesFrom            a rk:DateKind ; skos:inScheme rk:DateKindScheme ; skos:prefLabel "applies from"@en .
+rk:dk_transpositionDeadline  a rk:DateKind ; skos:inScheme rk:DateKindScheme ; skos:prefLabel "transposition deadline (directive)"@en .
+rk:dk_nationalMeasuresApply  a rk:DateKind ; skos:inScheme rk:DateKindScheme ; skos:prefLabel "national measures apply from (directive)"@en .
+rk:dk_withEffectFrom         a rk:DateKind ; skos:inScheme rk:DateKindScheme ; skos:prefLabel "with effect from (repeal / deletion)"@en .
+rk:dk_datedTask              a rk:DateKind ; skos:inScheme rk:DateKindScheme ; skos:prefLabel "dated task (by <date>)"@en .
+rk:dateKind a owl:ObjectProperty ; rdfs:domain rk:ApplicabilityPeriod ; rdfs:range rk:DateKind .
+rk:supersededBy a owl:ObjectProperty ; rdfs:domain rk:ApplicabilityPeriod ; rdfs:range rk:ApplicabilityPeriod ;
+    rdfs:comment "An amending act replaced this date (e.g. AI Act high-risk dates postponed by Regulation (EU) 2026/1744)."@en .
+
+###############################################################################
+#  L5 additions — amendments and legal correlations
+###############################################################################
+
+rk:AmendmentInstruction a owl:Class ;
+    rdfs:label "Amendment instruction"@en ;
+    rdfs:comment "One operation of an amending act on another act: insert, add, replace, replace heading, delete. The quoted text belongs to the TARGET act."@en .
+rk:AmendmentOperationScheme a skos:ConceptScheme ; skos:prefLabel "Amendment operations"@en .
+rk:AmendmentOperation a owl:Class ; rdfs:subClassOf skos:Concept .
+rk:op_insert         a rk:AmendmentOperation ; skos:inScheme rk:AmendmentOperationScheme ; skos:prefLabel "insert"@en .
+rk:op_add            a rk:AmendmentOperation ; skos:inScheme rk:AmendmentOperationScheme ; skos:prefLabel "add"@en .
+rk:op_replace        a rk:AmendmentOperation ; skos:inScheme rk:AmendmentOperationScheme ; skos:prefLabel "replace"@en .
+rk:op_replaceHeading a rk:AmendmentOperation ; skos:inScheme rk:AmendmentOperationScheme ; skos:prefLabel "replace heading"@en .
+rk:op_delete         a rk:AmendmentOperation ; skos:inScheme rk:AmendmentOperationScheme ; skos:prefLabel "delete"@en .
+rk:operation      a owl:ObjectProperty ; rdfs:domain rk:AmendmentInstruction ; rdfs:range rk:AmendmentOperation .
+rk:instructionIn  a owl:ObjectProperty ; rdfs:domain rk:AmendmentInstruction ; rdfs:range rk:Provision .
+rk:targetDocument a owl:ObjectProperty ; rdfs:domain rk:AmendmentInstruction ; rdfs:range rk:NormativeDocument .
+rk:targetReference a owl:DatatypeProperty ; rdfs:domain rk:AmendmentInstruction ; rdfs:range xsd:string ;
+    rdfs:comment "Target inside the amended act, e.g. 'Article 19', 'ARA.GEN.135A', 'Annex I'."@en .
+rk:insertedText   a owl:DatatypeProperty ; rdfs:domain rk:AmendmentInstruction ; rdfs:range xsd:string .
+
+rk:mt_correlates a rk:MappingType ; skos:inScheme rk:MappingTypeScheme ;
+    skos:prefLabel "legal correlation (repealed -> new)"@en ;
+    skos:scopeNote "Asserted by the law itself (correlation table, e.g. NIS2 Annex III). Created with reviewStatus validated and attributed to the correlation table provision."@en .
+rk:correlatesTo a owl:ObjectProperty ; rdfs:domain rk:Provision ; rdfs:range rk:Provision ;
+    rdfs:comment "Shortcut materialised from validated rk:mt_correlates mappings: provision of the repealed act -> provision of the new act. Used to resolve references to repealed acts (Part-IS -> NIS1 -> NIS2)."@en .
+
+###############################################################################
+#  L7 — APPLICABILITY (questions, rules, triggers)
+#
+#  A statement APPLIES to an assessed object iff the conjunction of
+#    (document scope rule) AND (rules of all ancestor provisions) AND (statement rule)
+#  evaluates to TRUE on the answers. Three-valued (Kleene) logic: missing answers
+#  give UNKNOWN, and the statement is reported as UNDETERMINED, never dropped.
+#
+#  Questions are SHARED nodes: many provisions point to the same question.
+#  Triggers (rk:triggeredBy) are NOT questions.
+###############################################################################
+
+rk:Question a owl:Class ;
+    rdfs:label "Applicability question"@en ;
+    rdfs:comment "A fact about the assessed object (product, process, data, organisation) needed to decide whether provisions apply. Answerable from a description of the object, neutral wording, no legal conclusion asked from the user."@en .
+rk:AnswerOption a owl:Class ;
+    rdfs:label "Answer option"@en ;
+    rdfs:comment "Option of a choice question; may correspond to a classification category (e.g. CRA important class I)."@en .
+rk:ApplicabilityRule a owl:Class ;
+    rdfs:label "Applicability rule"@en ;
+    rdfs:comment "Boolean condition over questions, stored as a JSON expression (see schemas/provision_package.schema.json#/$defs/condition)."@en .
+
+rk:QuestionLayerScheme a skos:ConceptScheme ; skos:prefLabel "Question layers (asking order)"@en .
+rk:QuestionLayer a owl:Class ; rdfs:subClassOf skos:Concept .
+rk:ql_scope          a rk:QuestionLayer ; skos:inScheme rk:QuestionLayerScheme ; skos:prefLabel "scope"@en ; skos:notation "1" ;
+    skos:definition "Does the instrument apply at all? (material and territorial scope, exclusions)"@en .
+rk:ql_role           a rk:QuestionLayer ; skos:inScheme rk:QuestionLayerScheme ; skos:prefLabel "role"@en ; skos:notation "2" ;
+    skos:definition "Which role does the user's organisation play? (manufacturer, importer, provider, deployer, operator...)"@en .
+rk:ql_classification a rk:QuestionLayer ; skos:inScheme rk:QuestionLayerScheme ; skos:prefLabel "classification"@en ; skos:notation "3" ;
+    skos:definition "Which category does the object fall into? (product class, risk tier, entity type, size)"@en .
+rk:ql_specific       a rk:QuestionLayer ; skos:inScheme rk:QuestionLayerScheme ; skos:prefLabel "specific"@en ; skos:notation "4" ;
+    skos:definition "Provision-specific conditions (e.g. processes personal data, has remote data processing)."@en .
+
+rk:AnswerTypeScheme a skos:ConceptScheme ; skos:prefLabel "Answer types"@en .
+rk:AnswerType a owl:Class ; rdfs:subClassOf skos:Concept .
+rk:at_boolean      a rk:AnswerType ; skos:inScheme rk:AnswerTypeScheme ; skos:prefLabel "boolean"@en .
+rk:at_singleChoice a rk:AnswerType ; skos:inScheme rk:AnswerTypeScheme ; skos:prefLabel "single choice"@en .
+rk:at_multiChoice  a rk:AnswerType ; skos:inScheme rk:AnswerTypeScheme ; skos:prefLabel "multiple choice"@en .
+rk:at_number       a rk:AnswerType ; skos:inScheme rk:AnswerTypeScheme ; skos:prefLabel "number"@en .
+rk:at_date         a rk:AnswerType ; skos:inScheme rk:AnswerTypeScheme ; skos:prefLabel "date"@en .
+
+rk:questionText a owl:DatatypeProperty ; rdfs:domain rk:Question ; rdfs:range xsd:string .
+rk:helpText     a owl:DatatypeProperty ; rdfs:domain rk:Question ; rdfs:range xsd:string ;
+    rdfs:comment "Plain-language explanation, may define legal terms used in the question."@en .
+rk:layer        a owl:ObjectProperty ; rdfs:domain rk:Question ; rdfs:range rk:QuestionLayer .
+rk:answerType   a owl:ObjectProperty ; rdfs:domain rk:Question ; rdfs:range rk:AnswerType .
+rk:hasOption    a owl:ObjectProperty ; rdfs:domain rk:Question ; rdfs:range rk:AnswerOption .
+rk:optionValue  a owl:DatatypeProperty ; rdfs:domain rk:AnswerOption ; rdfs:range xsd:string .
+rk:optionCategory a owl:ObjectProperty ; rdfs:domain rk:AnswerOption ; rdfs:range rk:Category .
+rk:unit         a owl:DatatypeProperty ; rdfs:domain rk:Question ; rdfs:range xsd:string ;
+    rdfs:comment "Unit for number questions (persons, EUR, ...)."@en .
+rk:questionSource a owl:ObjectProperty ; rdfs:domain rk:Question ; rdfs:range rk:Provision ;
+    rdfs:comment "Provision the question is derived from (scope article, definition, annex list)."@en .
+rk:askIf a owl:DatatypeProperty ; rdfs:domain rk:Question ; rdfs:range xsd:string ;
+    rdfs:comment "JSON condition: ask this question only if it evaluates TRUE (e.g. product class only if in scope)."@en .
+rk:dependsOn a owl:ObjectProperty ; rdfs:domain rk:Question ; rdfs:range rk:Question ;
+    rdfs:comment "Materialised from askIf for graph traversal."@en .
+rk:mergedInto a owl:ObjectProperty ; rdfs:domain rk:Question ; rdfs:range rk:Question ;
+    rdfs:comment "Duplicate question merged during review; keep for traceability."@en .
+
+rk:hasApplicability a owl:ObjectProperty ;
+    rdfs:comment "Already defined in v0.1 for ApplicabilityPeriod (dates); see rk:hasApplicabilityRule for conditions."@en .
+rk:hasApplicabilityRule a owl:ObjectProperty ; rdfs:range rk:ApplicabilityRule ;
+    rdfs:comment "Attached to a NormativeDocument (scope rule), a Provision (inherited by descendants) or a NormativeStatement."@en .
+rk:expression a owl:DatatypeProperty ; rdfs:domain rk:ApplicabilityRule ; rdfs:range xsd:string ;
+    rdfs:comment "JSON condition tree: {all:[..]}, {any:[..]}, {not:..}, leaf {q, op, value}."@en .
+rk:gatedBy a owl:ObjectProperty ; rdfs:range rk:Question ;
+    rdfs:comment "Materialised: every question referenced by the rule of a document, provision or statement."@en .
+
+###############################################################################
+#  L8 — ASSESSMENT (PRIVATE). Stored per tenant in the private store, never in
+#  the shared knowledge base. Referenced KB nodes are stored by id + KB version.
+###############################################################################
+
+rk:Tenant a owl:Class ; rk:storage "private" ; rdfs:label "Tenant / organisation using the system"@en .
+rk:User a owl:Class ; rk:storage "private" ; rdfs:label "Local user account"@en ;
+    rdfs:comment "Local username/password authentication. Roles: admin, reviewer, analyst."@en .
+rk:Assessment a owl:Class ; rk:storage "private" ;
+    rdfs:label "Assessment"@en ;
+    rdfs:comment "Analysis of one assessed object against one or more instruments, as of a date, with a frozen KB version."@en .
+rk:AssessedObject a owl:Class ; rk:storage "private" ;
+    rdfs:label "Assessed object"@en ;
+    rdfs:comment "The product, process, data set, service or organisation described by the user's documents."@en .
+rk:ObjectDocument a owl:Class ; rk:storage "private" ; rdfs:label "Document describing the object"@en .
+rk:Answer a owl:Class ; rk:storage "private" ;
+    rdfs:label "Answer"@en ;
+    rdfs:comment "Answer to a question in an assessment: value, source (inferred | user), confidence, evidence, status (proposed | confirmed | overridden)."@en .
+rk:Evidence a owl:Class ; rk:storage "private" ; rdfs:label "Evidence"@en ;
+    rdfs:comment "Verbatim quote from a chunk of an object document supporting an inferred answer."@en .
+rk:RequirementResult a owl:Class ; rk:storage "private" ;
+    rdfs:label "Requirement result"@en ;
+    rdfs:comment "Outcome for one statement: applicable | not_applicable | undetermined, with the questions that decided it."@en .
+rk:ResultStatusScheme a skos:ConceptScheme ; skos:prefLabel "Requirement result status"@en .
+rk:rr_applicable    a skos:Concept ; skos:inScheme rk:ResultStatusScheme ; skos:prefLabel "applicable"@en .
+rk:rr_notApplicable a skos:Concept ; skos:inScheme rk:ResultStatusScheme ; skos:prefLabel "not applicable"@en .
+rk:rr_undetermined  a skos:Concept ; skos:inScheme rk:ResultStatusScheme ; skos:prefLabel "undetermined (missing answers)"@en .
+
+rk:assesses      a owl:ObjectProperty ; rdfs:domain rk:Assessment ; rdfs:range rk:AssessedObject .
+rk:againstDocument a owl:ObjectProperty ; rdfs:domain rk:Assessment ; rdfs:range rk:NormativeDocument .
+rk:asOfDate      a owl:DatatypeProperty ; rdfs:domain rk:Assessment ; rdfs:range xsd:date .
+rk:kbVersion     a owl:DatatypeProperty ; rdfs:domain rk:Assessment ; rdfs:range xsd:string ;
+    rdfs:comment "Identifier of the KB snapshot used, so results stay reproducible after the KB changes."@en .
+rk:answers       a owl:ObjectProperty ; rdfs:domain rk:Answer ; rdfs:range rk:Question .
+rk:answerValue   a owl:DatatypeProperty ; rdfs:domain rk:Answer ; rdfs:range xsd:string ; rdfs:comment "JSON-encoded value."@en .
+rk:answerSource  a owl:DatatypeProperty ; rdfs:domain rk:Answer ; rdfs:range xsd:string ; rdfs:comment "inferred | user"@en .
+rk:supportedBy   a owl:ObjectProperty ; rdfs:domain rk:Answer ; rdfs:range rk:Evidence .
+rk:resultFor     a owl:ObjectProperty ; rdfs:domain rk:RequirementResult ; rdfs:range rk:NormativeStatement .
+rk:resultStatus  a owl:ObjectProperty ; rdfs:domain rk:RequirementResult ; rdfs:range skos:Concept .
+rk:decidedBy     a owl:ObjectProperty ; rdfs:domain rk:RequirementResult ; rdfs:range rk:Answer .
+
+###############################################################################
+#  NEO4J MAPPING — labels and relationship types (shared KB)
+###############################################################################
+
+rk:NormativeDocument rk:lpgLabel "Document" ; rk:storage "shared-kb" .
+rk:DocumentVersion   rk:lpgLabel "Version" ; rk:storage "shared-kb" .
+rk:Provision         rk:lpgLabel "Provision" ; rk:storage "shared-kb" .
+rk:NormativeStatement rk:lpgLabel "Statement" ; rk:storage "shared-kb" .
+rk:Question          rk:lpgLabel "Question" ; rk:storage "shared-kb" .
+rk:Role              rk:lpgLabel "Role" ; rk:storage "shared-kb" .
+rk:SubjectMatter     rk:lpgLabel "SubjectMatter" ; rk:storage "shared-kb" .
+rk:Term              rk:lpgLabel "Term" ; rk:storage "shared-kb" .
+rk:Definition        rk:lpgLabel "Definition" ; rk:storage "shared-kb" .
+rk:Category          rk:lpgLabel "Category" ; rk:storage "shared-kb" .
+rk:ClassificationScheme rk:lpgLabel "Scheme" ; rk:storage "shared-kb" .
+rk:ArtefactType      rk:lpgLabel "Artefact" ; rk:storage "shared-kb" .
+rk:EventType         rk:lpgLabel "Event" ; rk:storage "shared-kb" .
+rk:Topic             rk:lpgLabel "Topic" ; rk:storage "shared-kb" .
+rk:Organisation      rk:lpgLabel "Organisation" ; rk:storage "shared-kb" .
+rk:Mapping           rk:lpgLabel "Mapping" ; rk:storage "shared-kb" .
+rk:AmendmentInstruction rk:lpgLabel "Amendment" ; rk:storage "shared-kb" .
+rk:Procedure         rk:lpgLabel "Procedure" ; rk:storage "shared-kb" .
+rk:Channel           rk:lpgLabel "Channel" ; rk:storage "shared-kb" .
+rk:Series            rk:lpgLabel "Series" ; rk:storage "shared-kb" .
+
+rk:hasVersion        rk:lpgRelationship "HAS_VERSION" .
+rk:inVersion         rk:lpgRelationship "IN_VERSION" .
+rk:partOf            rk:lpgRelationship "PART_OF" .
+rk:derivedFrom       rk:lpgRelationship "DERIVED_FROM" .
+rk:addressee         rk:lpgRelationship "ADDRESSED_TO" .
+rk:beneficiary       rk:lpgRelationship "BENEFITS" .
+rk:recipient         rk:lpgRelationship "RECIPIENT" .
+rk:triggeredBy       rk:lpgRelationship "TRIGGERED_BY" .
+rk:anchorEvent       rk:lpgRelationship "DEADLINE_ANCHOR" .
+rk:requiresArtefact  rk:lpgRelationship "REQUIRES_ARTEFACT" .
+rk:requiresProcedure rk:lpgRelationship "REQUIRES_PROCEDURE" .
+rk:viaChannel        rk:lpgRelationship "VIA_CHANNEL" .
+rk:concerns          rk:lpgRelationship "CONCERNS" .
+rk:addressesTopic    rk:lpgRelationship "ABOUT" .
+rk:gatedBy           rk:lpgRelationship "GATED_BY" .
+rk:dependsOn         rk:lpgRelationship "DEPENDS_ON" .
+rk:optionCategory    rk:lpgRelationship "OPTION_CATEGORY" .
+rk:questionSource    rk:lpgRelationship "SOURCE" .
+rk:mergedInto        rk:lpgRelationship "MERGED_INTO" .
+rk:definesTerm       rk:lpgRelationship "DEFINES" .
+rk:definedIn         rk:lpgRelationship "DEFINED_IN" .
+rk:definedByReferenceTo rk:lpgRelationship "BY_REFERENCE_TO" .
+rk:inClassificationScheme rk:lpgRelationship "IN_SCHEME" .
+rk:classifiedAs      rk:lpgRelationship "CLASSIFIED_AS" .
+rk:mappingSource     rk:lpgRelationship "MAPS_FROM" .
+rk:mappingTarget     rk:lpgRelationship "MAPS_TO" .
+rk:viaTopic          rk:lpgRelationship "VIA_TOPIC" .
+rk:correlatesTo      rk:lpgRelationship "CORRELATES_TO" .
+rk:amends            rk:lpgRelationship "AMENDS" .
+rk:repeals           rk:lpgRelationship "REPEALS" .
+rk:supersedes        rk:lpgRelationship "SUPERSEDES" .
+rk:transposes        rk:lpgRelationship "TRANSPOSES" .
+rk:references        rk:lpgRelationship "REFERENCES" .
+rk:basedOn           rk:lpgRelationship "BASED_ON" .
+rk:interprets        rk:lpgRelationship "INTERPRETS" .
+rk:instructionIn     rk:lpgRelationship "INSTRUCTION_IN" .
+rk:targetDocument    rk:lpgRelationship "TARGETS" .
+rk:issuedBy          rk:lpgRelationship "ISSUED_BY" .
+rk:inSeries          rk:lpgRelationship "IN_SERIES" .
+skos:broader         rk:lpgRelationship "BROADER" .
+skos:closeMatch      rk:lpgRelationship "CLOSE_MATCH" .
+skos:exactMatch      rk:lpgRelationship "EXACT_MATCH" .
+
+###############################################################################
+#  English labels for v0.1 terms (v0.2)
+###############################################################################
+
+rk:ApplicabilityPeriod rdfs:label "Applicability period"@en .
+rk:ArtefactType rdfs:label "Artefact / evidence type"@en .
+rk:Category rdfs:label "Classification category"@en .
+rk:CertificationScheme rdfs:label "Certification scheme"@en .
+rk:Channel rdfs:label "Channel"@en .
+rk:ClassificationScheme rdfs:label "Classification scheme"@en .
+rk:CommonSpecification rdfs:label "Common specification"@en .
+rk:Condition rdfs:label "Condition"@en .
+rk:CoverageScheme skos:prefLabel "Coverage levels"@en .
+rk:Deadline rdfs:label "Deadline"@en .
+rk:Decision rdfs:label "Decision"@en .
+rk:Definition rdfs:label "Definition"@en .
+rk:DelegatedAct rdfs:label "Delegated act"@en .
+rk:Directive rdfs:label "Directive"@en .
+rk:DocStatusScheme skos:prefLabel "Document status"@en .
+rk:DocumentVersion rdfs:label "Document version"@en .
+rk:EuropeanStandard rdfs:label "European standard (EN)"@en .
+rk:EventType rdfs:label "Event type"@en .
+rk:Exemption rdfs:label "Exemption / derogation"@en .
+rk:ExtractionActivity rdfs:label "Extraction activity"@en .
+rk:Guidance rdfs:label "Guidance"@en .
+rk:HarmonisationListing rdfs:label "Harmonised standard listing (OJ)"@en .
+rk:ImplementingAct rdfs:label "Implementing act"@en .
+rk:InternationalStandard rdfs:label "International standard (IEC/ISO)"@en .
+rk:Jurisdiction rdfs:label "Jurisdiction"@en .
+rk:LegalAct rdfs:label "Legal act"@en .
+rk:LegalEffect rdfs:label "Legal effect"@en .
+rk:Mapping rdfs:label "Mapping (reified correspondence)"@en .
+rk:MappingTypeScheme skos:prefLabel "Mapping types"@en .
+rk:ModalityScheme skos:prefLabel "Deontic modalities"@en .
+rk:NationalLaw rdfs:label "National law"@en .
+rk:NormativeDocument rdfs:label "Normative document"@en .
+rk:NormativeStatement rdfs:label "Normative statement"@en .
+rk:Obligation rdfs:label "Obligation / requirement (shall)"@en .
+rk:Organisation rdfs:label "Organisation"@en .
+rk:Permission rdfs:label "Permission (may)"@en .
+rk:Procedure rdfs:label "Procedure"@en .
+rk:Prohibition rdfs:label "Prohibition (shall not)"@en .
+rk:Provision rdfs:label "Provision (structural unit)"@en .
+rk:ProvisionTypeScheme skos:prefLabel "Provision types"@en .
+rk:Recommendation rdfs:label "Recommendation (should)"@en .
+rk:Regulation rdfs:label "Regulation"@en .
+rk:ReviewStatusScheme skos:prefLabel "Review status"@en .
+rk:Role rdfs:label "Role"@en .
+rk:Sanction rdfs:label "Sanction"@en .
+rk:Series rdfs:label "Document series"@en .
+rk:SourceSpan rdfs:label "Source span"@en .
+rk:Standard rdfs:label "Standard"@en .
+rk:SubjectMatter rdfs:label "Regulated subject matter"@en .
+rk:SubjectMatterKindScheme skos:prefLabel "Kinds of subject matter"@en .
+rk:TechnicalReport rdfs:label "Technical report (TR)"@en .
+rk:TechnicalSpecification rdfs:label "Technical specification (TS)"@en .
+rk:Term rdfs:label "Term"@en .
+rk:Topic rdfs:label "Topic / control objective"@en .
+rk:TopicScheme skos:prefLabel "RegKG topic taxonomy"@en .
+rk:amends rdfs:label "amends"@en .
+rk:basedOn rdfs:label "based on"@en .
+rk:cov_full skos:prefLabel "full"@en .
+rk:cov_none skos:prefLabel "none"@en .
+rk:cov_partial skos:prefLabel "partial"@en .
+rk:ds_draft skos:prefLabel "draft"@en .
+rk:ds_published skos:prefLabel "published / in force"@en .
+rk:ds_underReview skos:prefLabel "under review"@en .
+rk:ds_withdrawn skos:prefLabel "withdrawn / repealed"@en .
+rk:eliUri rdfs:label "ELI URI"@en .
+rk:empowers rdfs:label "empowers (legal basis of delegated/implementing act)"@en .
+rk:identifier rdfs:label "official identifier"@en .
+rk:lexSpecialisFor rdfs:label "lex specialis relative to"@en .
+rk:mod_deemed skos:prefLabel "is deemed"@en .
+rk:mod_may skos:prefLabel "may"@en .
+rk:mod_shall skos:prefLabel "shall"@en .
+rk:mod_shallNot skos:prefLabel "shall not"@en .
+rk:mod_should skos:prefLabel "should"@en .
+rk:mt_broader skos:prefLabel "broader than"@en .
+rk:mt_conflicts skos:prefLabel "conflicts with"@en .
+rk:mt_contributesTo skos:prefLabel "contributes to (partial)"@en .
+rk:mt_equivalent skos:prefLabel "equivalent"@en .
+rk:mt_narrower skos:prefLabel "narrower than"@en .
+rk:mt_presumptionOfConformity skos:prefLabel "confers presumption of conformity"@en .
+rk:mt_related skos:prefLabel "related"@en .
+rk:mt_satisfies skos:prefLabel "satisfies (source -> target)"@en .
+rk:partOf rdfs:label "part of"@en .
+rk:pt_Annex skos:prefLabel "Annex"@en .
+rk:pt_Article skos:prefLabel "Article"@en .
+rk:pt_Chapter skos:prefLabel "Chapter"@en .
+rk:pt_Clause skos:prefLabel "Clause (standard)"@en .
+rk:pt_DefinitionEntry skos:prefLabel "Definition entry"@en .
+rk:pt_Note skos:prefLabel "Note / example"@en .
+rk:pt_Paragraph skos:prefLabel "Paragraph"@en .
+rk:pt_Part skos:prefLabel "Part / Title"@en .
+rk:pt_Point skos:prefLabel "Point"@en .
+rk:pt_Practice skos:prefLabel "Practice (group of requirements)"@en .
+rk:pt_Recital skos:prefLabel "Recital"@en .
+rk:pt_Requirement skos:prefLabel "Identified requirement (SM-1, CR 1.1)"@en .
+rk:pt_Section skos:prefLabel "Section"@en .
+rk:pt_Table skos:prefLabel "Table / figure"@en .
+rk:references rdfs:label "references"@en .
+rk:repeals rdfs:label "repeals"@en .
+rk:rs_proposed skos:prefLabel "proposed (not validated)"@en .
+rk:rs_rejected skos:prefLabel "rejected"@en .
+rk:rs_validated skos:prefLabel "validated by expert"@en .
+rk:shortName rdfs:label "short name"@en .
+rk:smk_data skos:prefLabel "data"@en .
+rk:smk_organisation skos:prefLabel "organisation / entity"@en .
+rk:smk_process skos:prefLabel "process"@en .
+rk:smk_product skos:prefLabel "product"@en .
+rk:smk_service skos:prefLabel "service"@en .
+rk:smk_system skos:prefLabel "system"@en .
+rk:supersedes rdfs:label "supersedes"@en .
+rk:transposes rdfs:label "transposes"@en .
+rk:withoutPrejudiceTo rdfs:label "without prejudice to"@en .

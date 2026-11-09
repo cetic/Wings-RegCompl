@@ -1,0 +1,651 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/regkg/schemas/provision_package.schema.json",
+  "title": "ProvisionPackage",
+  "description": "Output of pipeline step B2 (extraction agent). ONE file per extraction unit (an article, or an annex / annex part). Ready to load into Neo4j after review (step B3).",
+  "type": "object",
+  "required": [
+    "packageVersion",
+    "document",
+    "unit",
+    "provisions",
+    "statements",
+    "questions",
+    "extraction"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "packageVersion": {
+      "const": "1.0"
+    },
+    "document": {
+      "type": "object",
+      "required": [
+        "id",
+        "versionId",
+        "shortName"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "versionId": {
+          "type": "string"
+        },
+        "shortName": {
+          "type": "string"
+        }
+      }
+    },
+    "unit": {
+      "type": "object",
+      "required": [
+        "provisionId",
+        "citation",
+        "ptype"
+      ],
+      "description": "Root provision of this package.",
+      "properties": {
+        "provisionId": {
+          "type": "string"
+        },
+        "citation": {
+          "type": "string"
+        },
+        "ptype": {
+          "type": "string"
+        },
+        "heading": {
+          "type": "string"
+        }
+      }
+    },
+    "provisions": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Copied from the parsed document (root + descendants) so the package is self-contained. Text may be omitted for copyrighted standards (then textHash + summary).",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "citation",
+          "ptype",
+          "parent",
+          "isNormative"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "citation": {
+            "type": "string"
+          },
+          "ptype": {
+            "type": "string"
+          },
+          "localId": {
+            "type": "string"
+          },
+          "parent": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "ordinal": {
+            "type": "integer"
+          },
+          "heading": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "textHash": {
+            "type": "string"
+          },
+          "isNormative": {
+            "type": "boolean"
+          },
+          "applicability": {
+            "$ref": "#/$defs/condition",
+            "description": "Rule inherited by all statements derived from this provision and its descendants (e.g. a whole article that only applies to importers)."
+          }
+        }
+      }
+    },
+    "statements": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/statement"
+      }
+    },
+    "questions": {
+      "type": "array",
+      "description": "Every question referenced by an applicability rule or askIf in this package: existing questions (status 'existing', copied from the catalog) and new proposals.",
+      "items": {
+        "$ref": "#/$defs/question"
+      }
+    },
+    "definitions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/definition"
+      }
+    },
+    "roles": {
+      "type": "array",
+      "description": "New roles proposed by this package (existing roles are referenced by id only).",
+      "items": {
+        "$ref": "#/$defs/concept"
+      }
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/concept"
+      }
+    },
+    "artefacts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/concept"
+      }
+    },
+    "topicsProposed": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/concept"
+      }
+    },
+    "documentScope": {
+      "$ref": "#/$defs/condition",
+      "description": "Only in the package of the scope article (e.g. CRA Art. 2): the document-level scope rule."
+    },
+    "extraction": {
+      "type": "object",
+      "required": [
+        "model",
+        "promptVersion",
+        "timestamp"
+      ],
+      "properties": {
+        "model": {
+          "type": "string"
+        },
+        "promptVersion": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "attempts": {
+          "type": "integer"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Ambiguities the agent wants a reviewer to look at."
+        }
+      }
+    }
+  },
+  "$defs": {
+    "condition": {
+      "description": "Applicability condition. Three-valued evaluation (TRUE/FALSE/UNKNOWN, Kleene logic). A leaf whose question has no answer is UNKNOWN.",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "all"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "all": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/condition"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "any"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "any": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/condition"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "not"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "not": {
+              "$ref": "#/$defs/condition"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "q",
+            "op"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "q": {
+              "type": "string",
+              "pattern": "^[a-z0-9-]+:q\\.[a-z0-9-]+$"
+            },
+            "op": {
+              "enum": [
+                "is_true",
+                "is_false",
+                "eq",
+                "neq",
+                "in",
+                "not_in",
+                "contains",
+                "gte",
+                "lte",
+                "gt",
+                "lt"
+              ]
+            },
+            "value": {
+              "description": "Required for all ops except is_true / is_false. 'in'/'not_in' take an array; 'contains' applies to multi_choice answers."
+            }
+          }
+        }
+      ]
+    },
+    "statement": {
+      "type": "object",
+      "required": [
+        "id",
+        "type",
+        "modality",
+        "text",
+        "derivedFrom",
+        "evidence",
+        "topics",
+        "confidence",
+        "reviewStatus"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]+:st\\.[A-Za-z0-9_.-]+$",
+          "description": "Deterministic: <prefix>:st.<provision path>.<n>, e.g. cra:st.art_14.par_2.let_a.1"
+        },
+        "type": {
+          "enum": [
+            "Obligation",
+            "Prohibition",
+            "Permission",
+            "Recommendation",
+            "Exemption",
+            "LegalEffect"
+          ]
+        },
+        "modality": {
+          "enum": [
+            "shall",
+            "shall_not",
+            "should",
+            "may",
+            "deemed"
+          ]
+        },
+        "text": {
+          "type": "string",
+          "minLength": 10,
+          "description": "Atomic, self-contained reformulation in plain English (who must do what). No new facts."
+        },
+        "action": {
+          "type": "string",
+          "description": "Normalised verb: notify, draw_up, keep, test, inform, design, affix, register, ..."
+        },
+        "derivedFrom": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          },
+          "description": "Provision ids (must exist in 'provisions')."
+        },
+        "evidence": {
+          "type": "string",
+          "minLength": 5,
+          "description": "VERBATIM excerpt of the provision text supporting the statement (validated by exact substring match after whitespace normalisation)."
+        },
+        "addressees": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Role ids. Required for Obligation and Prohibition."
+        },
+        "recipients": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "beneficiaries": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "triggers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Event ids. OPERATIONAL conditions; never turned into questions."
+        },
+        "deadline": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "required": [
+            "duration",
+            "anchorEvent"
+          ],
+          "properties": {
+            "duration": {
+              "type": "string",
+              "pattern": "^P(?!$)(\\d+Y)?(\\d+M)?(\\d+W)?(\\d+D)?(T(?=\\d)(\\d+H)?(\\d+M)?(\\d+S)?)?$"
+            },
+            "anchorEvent": {
+              "type": "string"
+            },
+            "qualifier": {
+              "type": "string"
+            }
+          }
+        },
+        "retention": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "required": [
+            "minDuration"
+          ],
+          "properties": {
+            "minDuration": {
+              "type": "string"
+            },
+            "anchorEvent": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        "artefacts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "procedures": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "channels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "applicability": {
+          "$ref": "#/$defs/condition",
+          "description": "Statement-specific rule (AND-ed with document scope and ancestor provision rules). Omit if none."
+        },
+        "appliesFrom": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date"
+        },
+        "appliesUntil": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date"
+        },
+        "exceptionTo": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "topics": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          }
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "reviewStatus": {
+          "enum": [
+            "proposed",
+            "validated",
+            "rejected"
+          ]
+        },
+        "reviewerNote": {
+          "type": "string"
+        }
+      }
+    },
+    "question": {
+      "type": "object",
+      "required": [
+        "id",
+        "status",
+        "layer",
+        "answerType",
+        "text",
+        "source"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]+:q\\.[a-z0-9-]+$",
+          "description": "<prefix>:q.<slug>, e.g. cra:q.role-manufacturer. Cross-instrument questions use prefix 'kg'."
+        },
+        "status": {
+          "enum": [
+            "existing",
+            "proposed"
+          ],
+          "description": "'existing' = reused from the catalog unchanged."
+        },
+        "layer": {
+          "enum": [
+            "scope",
+            "role",
+            "classification",
+            "specific"
+          ]
+        },
+        "answerType": {
+          "enum": [
+            "boolean",
+            "single_choice",
+            "multi_choice",
+            "number",
+            "date"
+          ]
+        },
+        "text": {
+          "type": "string",
+          "minLength": 10,
+          "description": "Neutral, answerable from a description of the object, no legal conclusion asked."
+        },
+        "help": {
+          "type": "string"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "value",
+              "label"
+            ],
+            "properties": {
+              "value": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "category": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "unit": {
+          "type": "string"
+        },
+        "askIf": {
+          "$ref": "#/$defs/condition"
+        },
+        "source": {
+          "type": "string",
+          "description": "Provision id the question derives from."
+        },
+        "reviewStatus": {
+          "enum": [
+            "proposed",
+            "validated",
+            "rejected"
+          ]
+        },
+        "reviewerNote": {
+          "type": "string"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "answerType": {
+                "enum": [
+                  "single_choice",
+                  "multi_choice"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "options"
+            ]
+          }
+        }
+      ]
+    },
+    "definition": {
+      "type": "object",
+      "required": [
+        "id",
+        "term",
+        "definedIn"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "term": {
+          "type": "string"
+        },
+        "termId": {
+          "type": "string"
+        },
+        "alias": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "definedIn": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "byReferenceTo": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Citation or provision id of the referenced definition (may be a stub in another act)."
+        }
+      }
+    },
+    "concept": {
+      "type": "object",
+      "required": [
+        "id",
+        "label"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "broader": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  }
+}
