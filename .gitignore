@@ -67,3 +67,4 @@ ARCHITECTURE.md
 
 # Smoke / scratch test scripts
 /tmp/smoke_*.py
+docs/*

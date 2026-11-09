@@ -33,7 +33,7 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     ports:
-      - "8000:8000"
+      - "8001:8000"
     environment:
       GOOGLE_API_KEY: ${GOOGLE_API_KEY}
       NEO4J_URI: bolt://neo4j:7687
